@@ -1,3 +1,15 @@
+Gem5-AVX -------------------------------------------------------------------
+
+This repo adds partial AVX2 and AVX-512 support to gem5. Key features:
+- Supports many common instructions (passed the dense_mv test in avx_test).
+- Most arithmetic instructions are broken into a single microop.
+- No support for masking or broadcast.
+For more details, please refer to:
+
+Feel free to use and extend it. Please note that the code is not throughly
+tested, and almost certainly contains bugs. Use it at your own risk.
+
+Original README ------------------------------------------------------------
 This is the gem5 simulator.
 
 The main website can be found at http://www.gem5.org
