@@ -84,59 +84,60 @@ class Decoder : public InstDecoder
 
     static InstBytes dummy;
 
-    // The bytes to be predecoded.
-    MachInst fetchChunk;
-    InstBytes *instBytes = &dummy;
-    int chunkIdx;
-    // The pc of the start of fetchChunk.
-    Addr basePC = 0;
-    // The pc the current instruction started at.
-    Addr origPC = 0;
-    // The offset into fetchChunk of current processing.
-    int offset = 0;
-    // The extended machine instruction being generated.
-    ExtMachInst emi;
-    // Predecoding state.
-    X86Mode mode = LongMode;
-    X86SubMode submode = SixtyFourBitMode;
-    uint8_t altOp = 0;
-    uint8_t defOp = 0;
-    uint8_t altAddr = 0;
-    uint8_t defAddr = 0;
-    uint8_t stack = 0;
+    // For DPRINTF.
+    const std::string _name;
+    const std::string &name() const { return _name; }
 
-    uint8_t
-    getNextByte()
+    //The bytes to be predecoded
+    MachInst fetchChunk;
+    InstBytes *instBytes;
+    int chunkIdx;
+    //The pc of the start of fetchChunk
+    Addr basePC;
+    //The pc the current instruction started at
+    Addr origPC;
+    //The offset into fetchChunk of current processing
+    int offset;
+    //The extended machine instruction being generated
+    ExtMachInst emi;
+    //Predecoding state
+    X86Mode mode;
+    X86SubMode submode;
+    uint8_t altOp;
+    uint8_t defOp;
+    uint8_t altAddr;
+    uint8_t defAddr;
+    uint8_t stack;
+
+    uint8_t getNextByte()
     {
         return ((uint8_t *)&fetchChunk)[offset];
     }
 
-    void
-    getImmediate(int &collected, uint64_t &current, int size)
+    void getImmediate(int &collected, uint64_t &current, int size)
     {
-        // Figure out how many bytes we still need to get for the
-        // immediate.
+        //Figure out how many bytes we still need to get for the
+        //immediate.
         int toGet = size - collected;
-        // Figure out how many bytes are left in our "buffer".
+        //Figure out how many bytes are left in our "buffer"
         int remaining = sizeof(MachInst) - offset;
-        // Get as much as we need, up to the amount available.
+        //Get as much as we need, up to the amount available.
         toGet = toGet > remaining ? remaining : toGet;
 
-        // Shift the bytes we want to be all the way to the right
+        //Shift the bytes we want to be all the way to the right
         uint64_t partialImm = fetchChunk >> (offset * 8);
-        // Mask off what we don't want.
+        //Mask off what we don't want
         partialImm &= mask(toGet * 8);
-        // Shift it over to overlay with our displacement.
+        //Shift it over to overlay with our displacement.
         partialImm <<= (immediateCollected * 8);
-        // Put it into our displacement.
+        //Put it into our displacement
         current |= partialImm;
-        // Update how many bytes we've collected.
+        //Update how many bytes we've collected.
         collected += toGet;
         consumeBytes(toGet);
     }
 
-    void
-    updateOffsetState()
+    void updateOffsetState()
     {
         assert(offset <= sizeof(MachInst));
         if (offset == sizeof(MachInst)) {
@@ -153,32 +154,30 @@ class Decoder : public InstDecoder
         }
     }
 
-    void
-    consumeByte()
+    void consumeByte()
     {
         offset++;
         updateOffsetState();
     }
 
-    void
-    consumeBytes(int numBytes)
+    void consumeBytes(int numBytes)
     {
         offset += numBytes;
         updateOffsetState();
     }
 
-    // State machine state.
+    //State machine state
   protected:
-    // Whether or not we're out of bytes.
-    bool outOfBytes = true;
-    // Whether we've completed generating an ExtMachInst.
-    bool instDone = false;
-    // The size of the displacement value.
+    //Whether or not we're out of bytes
+    bool outOfBytes;
+    //Whether we've completed generating an ExtMachInst
+    bool instDone;
+    //The size of the displacement value
     int displacementSize;
-    // The size of the immediate value.
+    //The size of the immediate value
     int immediateSize;
-    // This is how much of any immediate value we've gotten. This is used
-    // for both the actual immediate and the displacement.
+    //This is how much of any immediate value we've gotten. This is used
+    //for both the actual immediate and the displacement.
     int immediateCollected;
 
     enum State {
@@ -189,6 +188,9 @@ class Decoder : public InstDecoder
         Vex2Of3State,
         Vex3Of3State,
         VexOpcodeState,
+        EVex2Of4State,
+        EVex3Of4State,
+        EVex4Of4State,
         OneByteOpcodeState,
         TwoByteOpcodeState,
         ThreeByte0F38OpcodeState,
@@ -197,19 +199,22 @@ class Decoder : public InstDecoder
         SIBState,
         DisplacementState,
         ImmediateState,
-        // We should never get to this state. Getting here is an error.
+        //We should never get to this state. Getting here is an error.
         ErrorState
     };
 
-    State state = ResetState;
+    State state;
 
-    // Functions to handle each of the states
+    //Functions to handle each of the states
     State doResetState();
     State doFromCacheState();
     State doPrefixState(uint8_t);
     State doVex2Of2State(uint8_t);
     State doVex2Of3State(uint8_t);
     State doVex3Of3State(uint8_t);
+    State doEVex2Of4State(uint8_t);
+    State doEVex3Of4State(uint8_t);
+    State doEVex4Of4State(uint8_t);
     State doVexOpcodeState(uint8_t);
     State doOneByteOpcodeState(uint8_t);
     State doTwoByteOpcodeState(uint8_t);
@@ -220,11 +225,14 @@ class Decoder : public InstDecoder
     State doDisplacementState();
     State doImmediateState();
 
-    // Process the actual opcode found earlier, using the supplied tables.
+    //Process the actual opcode found earlier, using the supplied tables.
     State processOpcode(ByteTable &immTable, ByteTable &modrmTable,
                         bool addrSizedImm = false);
     // Process the opcode found with VEX / XOP prefix.
     State processExtendedOpcode(ByteTable &immTable);
+
+    // Process the Compressed displacement in EVEX.
+    void processCompressedDisplacement();
 
   protected:
     /// Caching for decoded instruction objects.
@@ -232,25 +240,38 @@ class Decoder : public InstDecoder
     typedef RegVal CacheKey;
 
     typedef DecodeCache::AddrMap<Decoder::InstBytes> DecodePages;
-    DecodePages *decodePages = nullptr;
+    DecodePages *decodePages;
     typedef std::unordered_map<CacheKey, DecodePages *> AddrCacheMap;
     AddrCacheMap addrCacheMap;
 
-    DecodeCache::InstMap<ExtMachInst> *instMap = nullptr;
+    DecodeCache::InstMap<ExtMachInst> *instMap;
     typedef std::unordered_map<
             CacheKey, DecodeCache::InstMap<ExtMachInst> *> InstCacheMap;
     static InstCacheMap instCacheMap;
 
   public:
-    Decoder(ISA *isa=nullptr)
+    Decoder(ISA* isa = nullptr, int thread_id = 0)
+        : _name(std::string("decoder") + std::to_string(thread_id)),
+        basePC(0), origPC(0), offset(0),
+        outOfBytes(true), instDone(false),
+        state(ResetState)
     {
         emi.reset();
+        mode = LongMode;
+        submode = SixtyFourBitMode;
         emi.mode.mode = mode;
         emi.mode.submode = submode;
+        altOp = 0;
+        defOp = 0;
+        altAddr = 0;
+        defAddr = 0;
+        stack = 0;
+        instBytes = &dummy;
+        decodePages = NULL;
+        instMap = NULL;
     }
 
-    void
-    setM5Reg(HandyM5Reg m5Reg)
+    void setM5Reg(HandyM5Reg m5Reg)
     {
         mode = (X86Mode)(uint64_t)m5Reg.mode;
         submode = (X86SubMode)(uint64_t)m5Reg.submode;
@@ -279,8 +300,7 @@ class Decoder : public InstDecoder
         }
     }
 
-    void
-    takeOverFrom(Decoder *old)
+    void takeOverFrom(Decoder *old)
     {
         mode = old->mode;
         submode = old->submode;
@@ -291,16 +311,26 @@ class Decoder : public InstDecoder
         altAddr = old->altAddr;
         defAddr = old->defAddr;
         stack = old->stack;
+
+        // Also takes over the decodePages and instMap.
+        if (!this->decodePages) {
+            this->decodePages = old->decodePages;
+        }
+        if (!this->instMap) {
+            this->instMap = old->instMap;
+        }
     }
 
-    void reset() { state = ResetState; }
+    void reset()
+    {
+        state = ResetState;
+    }
 
     void process();
 
-    // Use this to give data to the decoder. This should be used
-    // when there is control flow.
-    void
-    moreBytes(const PCState &pc, Addr fetchPC, MachInst data)
+    //Use this to give data to the decoder. This should be used
+    //when there is control flow.
+    void moreBytes(const PCState &pc, Addr fetchPC, MachInst data)
     {
         DPRINTF(Decoder, "Getting more bytes.\n");
         basePC = fetchPC;
@@ -310,8 +340,15 @@ class Decoder : public InstDecoder
         process();
     }
 
-    bool needMoreBytes() { return outOfBytes; }
-    bool instReady() { return instDone; }
+    bool needMoreBytes()
+    {
+        return outOfBytes;
+    }
+
+    bool instReady()
+    {
+        return instDone;
+    }
 
     void
     updateNPC(X86ISA::PCState &nextPC)

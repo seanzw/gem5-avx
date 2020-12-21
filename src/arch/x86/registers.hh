@@ -61,7 +61,7 @@ const int NumCCRegs = NUM_CCREGS;
 // Each 128 bit xmm register is broken into two effective 64 bit registers.
 // Add 8 for the indices that are mapped over the fp stack
 const int NumFloatRegs =
-    NumMMXRegs + 2 * NumXMMRegs + NumMicroFpRegs + 8;
+    NumMMXRegs + NumXMMSubRegs * NumXMMRegs + NumMicroFpRegs + 8;
 
 // These enumerate all the registers for dependence tracking.
 enum DependenceTags {

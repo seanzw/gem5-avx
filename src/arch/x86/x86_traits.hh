@@ -55,8 +55,13 @@ namespace X86ISA
     //6. The register to use for shift doubles
 
     const int NumMMXRegs = 8;
-    const int NumXMMRegs = 16;
-    const int NumMicroFpRegs = 8;
+    const int NumXMMRegs = 32;
+    /**
+     * Float registers are broken into 64-bit sub-registers.
+     * 512bit / 64bit = 8.
+     */
+    const int NumXMMSubRegs = 8;
+    const int NumMicroFpRegs = 16;
 
     const int NumCRegs = 16;
     const int NumDRegs = 8;

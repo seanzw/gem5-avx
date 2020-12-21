@@ -42,9 +42,9 @@ Import('*')
 
 if env['TARGET_ISA'] != 'x86':
     Return()
-
 Source('cpuid.cc')
 Source('decoder.cc')
+Source('decompress_displacement.cc')
 Source('decoder_tables.cc')
 Source('emulenv.cc')
 Source('faults.cc')
@@ -53,6 +53,7 @@ Source('insts/badmicroop.cc')
 Source('insts/microfpop.cc')
 Source('insts/microldstop.cc')
 Source('insts/micromediaop.cc')
+Source('insts/microavxop.cc')
 Source('insts/microop.cc')
 Source('insts/microregop.cc')
 Source('insts/static_inst.cc')
@@ -81,6 +82,7 @@ DebugFlag('PageTableWalker', \
           "Page table walker state machine debugging")
 DebugFlag('Decoder', "Decoder debug output")
 DebugFlag('X86', "Generic X86 ISA debugging")
+DebugFlag('X86MediaMicroop', "X86 Media Microop debugging")
 
 python_files = (
     '__init__.py',

@@ -104,7 +104,8 @@ let {{
 
 let {{
     class OpType(object):
-        parser = re.compile(r"(?P<tag>[A-Z]+)(?P<size>[a-z]*)|(r(?P<reg>[A-Z0-9]+)(?P<rsize>[a-z]*))")
+        parser = re.compile(
+            r"(?P<tag>[A-Z]+)(?P<size>[a-z]*)|(r(?P<reg>[A-Z0-9]+)(?P<rsize>[a-z]*))")
         def __init__(self, opTypeString):
             match = OpType.parser.search(opTypeString)
             if match == None:
@@ -116,8 +117,10 @@ let {{
             if not self.size:
                 self.size = match.group("rsize")
 
-    ModRMRegIndex = "(MODRM_REG | (REX_R << 3))"
-    ModRMRMIndex = "(MODRM_RM | (REX_B << 3))"
+    # EVEX will extend ModRMReg with EVEX_R'.
+    ModRMRegIndex = "(MODRM_REG | (REX_R << 3) | ((EVEX_PRESENT ? EVEX_R_PRIME : 0) << 4))"
+    # EVEX will extend ModRMRM with REX_X.
+    ModRMRMIndex = "(MODRM_RM | (REX_B << 3) | ((EVEX_PRESENT ? REX_X : 0) << 4))"
     InstRegIndex = "(OPCODE_OP_BOTTOM3 | (REX_B << 3))"
 
     # This function specializes the given piece of code to use a particular
@@ -129,7 +132,7 @@ let {{
             opType = OpType(opTypes[0])
             opTypes.pop(0)
 
-            if opType.tag not in ("I", "J", "P", "PR", "Q", "V", "VR", "W"):
+            if opType.tag not in ("I", "J", "P", "PR", "Q", "V", "VR", "W", "WY", "WZ"):
                 if opType.size:
                     env.setSize(opType.size)
 
@@ -184,7 +187,7 @@ let {{
                 env.addToDisassembly(
                         "printSegment(out, %s);\n" % ModRMRegIndex)
                 Name += "_S"
-            elif opType.tag in ("G", "P", "T", "V"):
+            elif opType.tag in ("G", "P", "T", "V", "VY", "VZ"):
                 # Use the "reg" field of the ModRM byte to select the register
                 env.addReg(ModRMRegIndex)
                 env.addToDisassembly(
@@ -192,13 +195,16 @@ let {{
                                                                  ModRMRegIndex)
 
                 if opType.tag == "P":
-
                     Name += "_MMX"
                 elif opType.tag == "V":
                     Name += "_XMM"
+                elif opType.tag == "VY":
+                    Name += "_YMM"
+                elif opType.tag == "VZ":
+                    Name += "_ZMM"
                 else:
                     Name += "_R"
-            elif opType.tag in ("E", "Q", "W"):
+            elif opType.tag in ("E", "Q", "W", "WY", "WZ"):
                 # This might refer to memory or to a register. We need to
                 # divide it up farther.
                 regEnv = copy.copy(env)
@@ -217,11 +223,19 @@ let {{
                     regSuffix = "_MMX"
                 elif opType.tag == "W":
                     regSuffix = "_XMM"
-                return doSplitDecode("MODRM_MOD",
-                    {"3" : (specializeInst, Name + regSuffix,
-                            copy.copy(opTypes), regEnv)},
-                           (doRipRelativeDecode, Name,
-                            copy.copy(opTypes), memEnv))
+                elif opType.tag == "WY":
+                    regSuffix = "_YMM"
+                elif opType.tag == "WZ":
+                    regSuffix = "_ZMM"
+                return doSplitDecode(
+                    switchVal="MODRM_MOD",
+                    vals={
+                        "3": (
+                            specializeInst, Name + regSuffix, copy.copy(opTypes), regEnv
+                        )
+                    },
+                    default=(doRipRelativeDecode, Name, copy.copy(opTypes), memEnv)
+                )
             elif opType.tag in ("I", "J"):
                 # Immediates
                 env.addToDisassembly(

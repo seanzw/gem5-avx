@@ -126,6 +126,14 @@ def template MacroConstructor {{
             //alloc_microops is the code that sets up the microops
             //array in the parent class.
             %(alloc_microops)s;
+            /**
+             * We need this so that MinorCPU Fetch2 stage will try to predict
+             * the branch for macroop.
+             */
+            if(%(num_microops)s>0) {
+                flags[IsControl] = microops[%(num_microops)s-1]->isControl();
+                flags[IsCondControl] = microops[%(num_microops)s-1]->isCondCtrl();
+            }
         }
 }};
 
@@ -307,6 +315,12 @@ let {{
                 self.dataSize = "(REX_W ? 8 : 4)"
             elif self.size == 'q':
                 self.dataSize = 8
+            elif self.size == 'o':
+                self.dataSize = 16
+            elif self.size == 'do':
+                self.dataSize = 32
+            elif self.size == 'qo':
+                self.dataSize = 64
             elif self.size == 'v':
                 self.dataSize = "OPSIZE"
             elif self.size == 'w':

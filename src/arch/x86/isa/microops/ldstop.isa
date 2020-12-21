@@ -449,15 +449,23 @@ let {{
         name = mnemonic.lower()
 
         # Build up the all register version of this micro op
-        iops = [InstObjParams(name, Name, 'X86ISA::LdStOp',
-                              { "code": code,
-                                "ea_code": calculateEA,
-                                "memDataSize": "dataSize" })]
+        iops = [
+            InstObjParams(name, Name, 'X86ISA::LdStOp',
+                {
+                    "code": code,
+                    "ea_code": calculateEA,
+                    "memDataSize": "dataSize"
+                },
+                )]
         if big:
-            iops += [InstObjParams(name, Name + "Big", 'X86ISA::LdStOp',
-                                   { "code": bigCode,
-                                     "ea_code": calculateEA,
-                                     "memDataSize": "dataSize" })]
+            iops += [
+                InstObjParams(name, Name + "Big", 'X86ISA::LdStOp',
+                    {
+                        "code": bigCode,
+                        "ea_code": calculateEA,
+                        "memDataSize": "dataSize"
+                    },
+                    )]
         for iop in iops:
             header_output += MicroLdStOpDeclare.subst(iop)
             decoder_output += MicroLdStOpConstructor.subst(iop)
@@ -504,6 +512,28 @@ let {{
                       nonSpec=True)
 
     defineMicroLoadOp('Ldfp', code='FpData_uqw = Mem', big = False)
+
+    # Used to implement AVX512 load, only used with 32/64-byte data.
+    defineMicroLoadOp('Ldfp128', code='''
+        FpData0_uqw = Mem_u2qw[0];
+        FpData1_uqw = Mem_u2qw[1];
+    ''', big = False)
+    defineMicroLoadOp('Ldfp256', code='''
+        FpData0_uqw = Mem_u4qw[0];
+        FpData1_uqw = Mem_u4qw[1];
+        FpData2_uqw = Mem_u4qw[2];
+        FpData3_uqw = Mem_u4qw[3];
+    ''', big = False)
+    defineMicroLoadOp('Ldfp512', code='''
+        FpData0_uqw = Mem_u8qw[0];
+        FpData1_uqw = Mem_u8qw[1];
+        FpData2_uqw = Mem_u8qw[2];
+        FpData3_uqw = Mem_u8qw[3];
+        FpData4_uqw = Mem_u8qw[4];
+        FpData5_uqw = Mem_u8qw[5];
+        FpData6_uqw = Mem_u8qw[6];
+        FpData7_uqw = Mem_u8qw[7];
+    ''', big = False)
 
     defineMicroLoadOp('Ldfp87', code='''
         switch (dataSize)
@@ -633,6 +663,28 @@ let {{
             mem_flags="Request::LOCKED_RMW")
 
     defineMicroStoreOp('Stfp', code='Mem = FpData_uqw;')
+
+    # Used to implement AVX512.
+    defineMicroStoreOp('Stfp128', code='''
+        Mem_u2qw[0] = FpData0_uqw;
+        Mem_u2qw[1] = FpData1_uqw;
+    ''')
+    defineMicroStoreOp('Stfp256', code='''
+        Mem_u4qw[0] = FpData0_uqw;
+        Mem_u4qw[1] = FpData1_uqw;
+        Mem_u4qw[2] = FpData2_uqw;
+        Mem_u4qw[3] = FpData3_uqw;
+    ''')
+    defineMicroStoreOp('Stfp512', code='''
+        Mem_u8qw[0] = FpData0_uqw;
+        Mem_u8qw[1] = FpData1_uqw;
+        Mem_u8qw[2] = FpData2_uqw;
+        Mem_u8qw[3] = FpData3_uqw;
+        Mem_u8qw[4] = FpData4_uqw;
+        Mem_u8qw[5] = FpData5_uqw;
+        Mem_u8qw[6] = FpData6_uqw;
+        Mem_u8qw[7] = FpData7_uqw;
+    ''')
 
     defineMicroStoreOp('Stfp87', code='''
         switch (dataSize)

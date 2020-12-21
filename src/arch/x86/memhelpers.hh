@@ -95,7 +95,8 @@ getMem(PacketPtr pkt, std::array<uint64_t, N> &mem, unsigned dataSize,
         getPackedMem<uint64_t, N>(pkt, mem, dataSize);
         break;
       default:
-        panic("Unhandled element size in getMem.\n");
+        panic_if(dataSize != sizeof(mem), "Unhandled element size in getMem.\n");
+        getPackedMem<uint64_t, N>(pkt, mem, dataSize);
     }
     if (traceData)
         traceData->setData(mem[0]);
@@ -156,7 +157,8 @@ readMemAtomic(ExecContext *xc, Trace::InstRecord *traceData, Addr addr,
         fault = readPackedMemAtomic<uint64_t, N>(xc, addr, mem, flags);
         break;
       default:
-        panic("Unhandled element size in readMemAtomic\n");
+        panic_if(dataSize != sizeof(mem), "Unhandled element size in readMemAtomic.\n");
+        fault = readPackedMemAtomic<uint64_t, N>(xc, addr, mem, flags);
     }
     if (fault == NoFault && traceData)
         traceData->setData(mem[0]);
@@ -207,7 +209,8 @@ writeMemTiming(ExecContext *xc, Trace::InstRecord *traceData,
       case 8:
         return writePackedMem<uint64_t, N>(xc, mem, addr, flags, res);
       default:
-        panic("Unhandled element size in writeMemTiming.\n");
+        panic_if(dataSize != sizeof(mem), "Unhandled element size in writeMemTiming.\n");
+        return writePackedMem<uint64_t, N>(xc, mem, addr, flags, res);
     }
 }
 
@@ -245,7 +248,8 @@ writeMemAtomic(ExecContext *xc, Trace::InstRecord *traceData,
         fault = writePackedMem<uint64_t, N>(xc, mem, addr, flags, res);
         break;
       default:
-        panic("Unhandled element size in writeMemAtomic.\n");
+        panic_if(dataSize != sizeof(mem), "Unhandled element size in writeMemAtomic.\n");
+        fault = writePackedMem<uint64_t, N>(xc, mem, addr, flags, res);
     }
 
     if (fault == NoFault && res)

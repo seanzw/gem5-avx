@@ -125,7 +125,7 @@ let {{
             MediaOpExecute)
 
     class MediaOpMeta(type):
-        def buildCppClasses(self, name, Name, suffix, code):
+        def buildCppClasses(self, name, Name, suffix, code, additional_params):
 
             # Globals to stick the output in
             global header_output
@@ -142,9 +142,9 @@ let {{
                     typeQual = match.group("typeQual")
                 src2_name = "%sFpSrcReg2%s" % (match.group("prefix"), typeQual)
                 self.buildCppClasses(name, Name, suffix,
-                        matcher.sub(src2_name, code))
+                        matcher.sub(src2_name, code), additional_params)
                 self.buildCppClasses(name + "i", Name, suffix + "Imm",
-                        matcher.sub("imm8", code))
+                        matcher.sub("imm8", code), additional_params)
                 return
 
             base = "X86ISA::MediaOp"
@@ -188,7 +188,10 @@ let {{
                 code = cls.code
 
                 # Set up the C++ classes
-                mcls.buildCppClasses(cls, name, Name, "", code)
+                additional_params = []
+                if hasattr(cls, 'op_class'):
+                    additional_params.append(cls.op_class)
+                mcls.buildCppClasses(cls, name, Name, "", code, additional_params)
 
                 # Hook into the microassembler dict
                 global microopClasses
@@ -365,6 +368,137 @@ let {{
                 int loIndex = (i + 0) * sizeBits;
                 result = insertBits(result, hiIndex, loIndex, resBits);
             }
+            DPRINTF(X86MediaMicroop, "shuffle sel %#x %#x %#x -> %#x.\\n",
+                sel, FpSrcReg1_uqw, FpSrcReg2_uqw, result);
+            FpDestReg_uqw = result;
+        '''
+
+    class Mblend(MediaOp):
+        op_class = 'SimdMiscOp'
+        code = '''
+            assert(srcSize == destSize);
+            int size = destSize;
+            int sizeBits = size * 8;
+            int items = sizeof(double) / size;
+            uint64_t result = 0;
+            uint8_t selector = ext;
+            for (int i = 0; i < items; ++i) {
+                int msb = (i + 1) * sizeBits - 1;
+                int lsb = i * sizeBits;
+                uint64_t v1 = bits(FpSrcReg1_uqw, msb, lsb);
+                uint64_t v2 = bits(FpSrcReg2_uqw, msb, lsb);
+                if (selector & (1 << i))
+                    result = insertBits(result, msb, lsb, v2);
+                else
+                    result = insertBits(result, msb, lsb, v1);
+            }
+            FpDestReg_uqw = result;
+        '''
+
+    class Mmovsdup(MediaOp):
+        def __init__(self, dest, src1, \
+                size=None, destSize=None, srcSize=None, ext=None):
+            # Make op2 = src1
+            super(Mmovsdup, self).__init__(dest, src1,\
+                    src1, size, destSize, srcSize, ext)
+        op_class = 'SimdMiscOp'
+        code = '''
+            assert(srcSize == destSize);
+            assert(destSize == 4);
+            uint64_t v = 0;
+            uint64_t result = 0;
+            bool high = ext;
+            if (high) {
+                v = bits(FpSrcReg1_uqw, 63, 32);
+            } else {
+                v = bits(FpSrcReg1_uqw, 31, 0);
+            }
+            result = insertBits(result, 31, 0, v);
+            result = insertBits(result, 64, 32, v);
+            FpDestReg_uqw = result;
+        '''
+
+    class Mpermilps(MediaOp):
+        op_class = 'SimdMiscOp'
+        code = '''
+            assert(srcSize == destSize);
+            assert(srcSize == 4);
+            uint64_t vs[4];
+            vs[0] = bits(FpSrcReg1_uqw, 31, 0);
+            vs[1] = bits(FpSrcReg1_uqw, 63, 32);
+            vs[2] = bits(FpSrcReg2_uqw, 31, 0);
+            vs[3] = bits(FpSrcReg2_uqw, 63, 32);
+            uint64_t result = 0;
+            uint8_t sel0 = (ext >> 0) & 0x3;
+            result = insertBits(result, 31, 0, vs[sel0]);
+            uint8_t sel1 = (ext >> 2) & 0x3;
+            result = insertBits(result, 63, 32, vs[sel1]);
+            FpDestReg_uqw = result;
+        '''
+
+    class Mpermilpd(MediaOp):
+        op_class = 'SimdMiscOp'
+        code = '''
+            assert(srcSize == destSize);
+            assert(srcSize == 8);
+            uint8_t sel0 = (ext >> 0) & 0x1;
+            uint64_t result = sel0 ? FpSrcReg2_uqw : FpSrcReg1_uqw;
+            FpDestReg_uqw = result;
+        '''
+
+    class Minsertpsl(MediaOp):
+        op_class = 'SimdMiscOp'
+        code = '''
+            assert(srcSize == destSize);
+            assert(srcSize == 4);
+            uint64_t vs[4];
+            vs[0] = bits(FpSrcReg1_uqw, 31, 0);
+            vs[1] = bits(FpSrcReg1_uqw, 63, 32);
+            vs[2] = bits(FpSrcReg2_uqw, 31, 0);
+            vs[3] = bits(FpSrcReg2_uqw, 63, 32);
+            uint8_t zmask = (ext >> 0) & 0xF;
+            uint8_t countD = (ext >> 4) & 0x3;
+            uint8_t countS = (ext >> 6) & 0x3;
+            uint64_t result = FpDestReg_uqw;
+            // Insert into countD.
+            if (countD == 0) {
+                result = insertBits(result, 31, 0, vs[countS]);
+            } else if (countD == 1) {
+                result = insertBits(result, 64, 32, vs[countS]);
+            }
+            // Apply zero mask.
+            if ((zmask >> 0) & 0x1)
+                result = insertBits(result, 31, 0, 0);
+            if ((zmask >> 1) & 0x1)
+                result = insertBits(result, 64, 32, 0);
+            FpDestReg_uqw = result;
+        '''
+
+    class Minsertpsh(MediaOp):
+        op_class = 'SimdMiscOp'
+        code = '''
+            assert(srcSize == destSize);
+            assert(srcSize == 4);
+            uint64_t vs[4];
+            vs[0] = bits(FpSrcReg1_uqw, 31, 0);
+            vs[1] = bits(FpSrcReg1_uqw, 63, 32);
+            vs[2] = bits(FpSrcReg2_uqw, 31, 0);
+            vs[3] = bits(FpSrcReg2_uqw, 63, 32);
+            uint8_t zmask = (ext >> 0) & 0xF;
+            uint8_t countD = (ext >> 4) & 0x3;
+            uint8_t countS = (ext >> 6) & 0x3;
+            uint64_t result = FpDestReg_uqw;
+            // Insert into countD.
+            if (countD == 2) {
+                result = insertBits(result, 31, 0, vs[countS]);
+            } else if (countD == 3) {
+                result = insertBits(result, 64, 32, vs[countS]);
+            }
+            // Apply zero mask.
+            if ((zmask >> 2) & 0x1)
+                result = insertBits(result, 31, 0, 0);
+            if ((zmask >> 3) & 0x1)
+                result = insertBits(result, 64, 32, 0);
             FpDestReg_uqw = result;
         '''
 
@@ -790,12 +924,20 @@ let {{
                     arg1.i = arg1Bits;
                     arg2.i = arg2Bits;
                     res.f = arg1.f + arg2.f;
+                    DPRINTF(X86MediaMicroop, "maddf32 %s(%f) + %s(%f) = %s(%f).\\n",
+                        srcRegIdx(0), arg1.f,
+                        srcRegIdx(1), arg2.f,
+                        destRegIdx(0), res.f);
                     resBits = res.i;
                 } else {
                     doubleInt arg1, arg2, res;
                     arg1.i = arg1Bits;
                     arg2.i = arg2Bits;
                     res.d = arg1.d + arg2.d;
+                    DPRINTF(X86MediaMicroop, "maddf64 %s(%f) + %s(%f) = %s(%f).\\n",
+                        srcRegIdx(0), arg1.d,
+                        srcRegIdx(1), arg2.d,
+                        destRegIdx(0), res.d);
                     resBits = res.i;
                 }
 
@@ -837,6 +979,9 @@ let {{
                     arg1.i = arg1Bits;
                     arg2.i = arg2Bits;
                     res.f = arg1.f - arg2.f;
+                    DPRINTF(X86MediaMicroop, "msubf32 %s - %s = %s, %f - %f = %f.\\n",
+                        srcRegIdx(0), srcRegIdx(1), destRegIdx(0),
+                        arg1.f, arg2.f, res.f);
                     resBits = res.i;
                 } else {
                     doubleInt arg1, arg2, res;
@@ -884,12 +1029,20 @@ let {{
                     arg1.i = arg1Bits;
                     arg2.i = arg2Bits;
                     res.f = arg1.f * arg2.f;
+                    DPRINTF(X86MediaMicroop, "mmulf32 %s(%f) * %s(%f) = %s(%f).\\n",
+                        srcRegIdx(0), arg1.f,
+                        srcRegIdx(1), arg2.f,
+                        destRegIdx(0), res.f);
                     resBits = res.i;
                 } else {
                     doubleInt arg1, arg2, res;
                     arg1.i = arg1Bits;
                     arg2.i = arg2Bits;
                     res.d = arg1.d * arg2.d;
+                    DPRINTF(X86MediaMicroop, "mmulf64 %s(%f) * %s(%f) = %s(%f).\\n",
+                        srcRegIdx(0), arg1.d,
+                        srcRegIdx(1), arg2.d,
+                        destRegIdx(0), res.d);
                     resBits = res.i;
                 }
 
@@ -960,6 +1113,12 @@ let {{
                 uint64_t arg1Bits = bits(FpSrcReg1_uqw, hiIndex, loIndex);
                 uint64_t arg2Bits = bits(FpSrcReg2_uqw, hiIndex, loIndex);
                 uint64_t resBits = arg1Bits + arg2Bits;
+
+                DPRINTF(X86MediaMicroop, "MAddi %d %s(%#x) + %s(#x) = %s(#x), rm %d, v %d.\\n",
+                    i, srcRegIdx(0), arg1Bits,
+                    srcRegIdx(1), arg2Bits,
+                    destRegIdx(0), resBits,
+                    machInst.modRM.rm, machInst.evex.v_extend);
 
                 if (ext & 0x2) {
                     if (signedOp()) {
@@ -1321,6 +1480,70 @@ let {{
                 int64_t sArg = argBits |
                     (0 - (argBits & (ULL(1) << (srcSizeBits - 1))));
                 double arg = sArg;
+
+                if (destSize == 4) {
+                    floatInt fi;
+                    fi.f = arg;
+                    argBits = fi.i;
+                    DPRINTF(X86MediaMicroop, "cvti2f32 %d -> %f.\\n",
+                        arg, fi.f);
+                } else {
+                    doubleInt di;
+                    di.d = arg;
+                    argBits = di.i;
+                    DPRINTF(X86MediaMicroop, "cvti2f64 %d -> %f.\\n",
+                        arg, di.d);
+                }
+                int destHiIndex = destStart + (i + 1) * destSizeBits - 1;
+                int destLoIndex = destStart + (i + 0) * destSizeBits;
+                result = insertBits(result, destHiIndex, destLoIndex, argBits);
+            }
+            FpDestReg_uqw = result;
+        '''
+
+    class Cvtui2f(MediaOp):
+        def __init__(self, dest, src, \
+                size = None, destSize = None, srcSize = None, ext = None):
+            super(Cvtui2f, self).__init__(dest, src,\
+                    "InstRegIndex(0)", size, destSize, srcSize, ext)
+        op_class = 'SimdFloatCvtOp'
+        code = '''
+            union floatInt
+            {
+                float f;
+                uint32_t i;
+            };
+            union doubleInt
+            {
+                double d;
+                uint64_t i;
+            };
+
+            assert(destSize == 4 || destSize == 8);
+            assert(srcSize == 4 || srcSize == 8);
+            int srcSizeBits = srcSize * 8;
+            int destSizeBits = destSize * 8;
+            int items;
+            int srcStart = 0;
+            int destStart = 0;
+            if (srcSize == 2 * destSize) {
+                items = numItems(srcSize);
+                if (ext & 0x2)
+                    destStart = destSizeBits * items;
+            } else if (destSize == 2 * srcSize) {
+                items = numItems(destSize);
+                if (ext & 0x2)
+                    srcStart = srcSizeBits * items;
+            } else {
+                items = numItems(destSize);
+            }
+            uint64_t result = FpDestReg_uqw;
+
+            for (int i = 0; i < items; i++) {
+                int srcHiIndex = srcStart + (i + 1) * srcSizeBits - 1;
+                int srcLoIndex = srcStart + (i + 0) * srcSizeBits;
+                uint64_t argBits = bits(FpSrcReg1_uqw, srcHiIndex, srcLoIndex);
+                double arg = argBits;
 
                 if (destSize == 4) {
                     floatInt fi;

@@ -136,8 +136,8 @@ class DerivO3CPU(BaseCPU):
 
     numRobs = Param.Unsigned(1, "Number of Reorder Buffers");
 
-    numPhysIntRegs = Param.Unsigned(256, "Number of physical integer registers")
-    numPhysFloatRegs = Param.Unsigned(256, "Number of physical floating point "
+    numPhysIntRegs = Param.Unsigned(1024, "Number of physical integer registers")
+    numPhysFloatRegs = Param.Unsigned(1024, "Number of physical floating point "
                                       "registers")
     # most ISAs don't use condition-code regs, so default is 0
     _defaultNumPhysCCRegs = 0

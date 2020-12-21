@@ -67,40 +67,51 @@ namespace X86ISA
         FLOATREG_FPR7,
 
         FLOATREG_XMM_BASE = FLOATREG_MMX_BASE + NumMMXRegs,
-        FLOATREG_XMM0_LOW = FLOATREG_XMM_BASE,
-        FLOATREG_XMM0_HIGH,
-        FLOATREG_XMM1_LOW,
-        FLOATREG_XMM1_HIGH,
-        FLOATREG_XMM2_LOW,
-        FLOATREG_XMM2_HIGH,
-        FLOATREG_XMM3_LOW,
-        FLOATREG_XMM3_HIGH,
-        FLOATREG_XMM4_LOW,
-        FLOATREG_XMM4_HIGH,
-        FLOATREG_XMM5_LOW,
-        FLOATREG_XMM5_HIGH,
-        FLOATREG_XMM6_LOW,
-        FLOATREG_XMM6_HIGH,
-        FLOATREG_XMM7_LOW,
-        FLOATREG_XMM7_HIGH,
-        FLOATREG_XMM8_LOW,
-        FLOATREG_XMM8_HIGH,
-        FLOATREG_XMM9_LOW,
-        FLOATREG_XMM9_HIGH,
-        FLOATREG_XMM10_LOW,
-        FLOATREG_XMM10_HIGH,
-        FLOATREG_XMM11_LOW,
-        FLOATREG_XMM11_HIGH,
-        FLOATREG_XMM12_LOW,
-        FLOATREG_XMM12_HIGH,
-        FLOATREG_XMM13_LOW,
-        FLOATREG_XMM13_HIGH,
-        FLOATREG_XMM14_LOW,
-        FLOATREG_XMM14_HIGH,
-        FLOATREG_XMM15_LOW,
-        FLOATREG_XMM15_HIGH,
+        // ! Keep consistent with NumXMMSubRegs
+#define FLOATREG_XMM_IDX(i) \
+        FLOATREG_XMM ## i ## _0 = FLOATREG_XMM_BASE + i * NumXMMSubRegs + 0, \
+        FLOATREG_XMM ## i ## _1 = FLOATREG_XMM_BASE + i * NumXMMSubRegs + 1, \
+        FLOATREG_XMM ## i ## _2 = FLOATREG_XMM_BASE + i * NumXMMSubRegs + 2, \
+        FLOATREG_XMM ## i ## _3 = FLOATREG_XMM_BASE + i * NumXMMSubRegs + 3, \
+        FLOATREG_XMM ## i ## _4 = FLOATREG_XMM_BASE + i * NumXMMSubRegs + 4, \
+        FLOATREG_XMM ## i ## _5 = FLOATREG_XMM_BASE + i * NumXMMSubRegs + 5, \
+        FLOATREG_XMM ## i ## _6 = FLOATREG_XMM_BASE + i * NumXMMSubRegs + 6, \
+        FLOATREG_XMM ## i ## _7 = FLOATREG_XMM_BASE + i * NumXMMSubRegs + 7
+        FLOATREG_XMM_IDX(0),
+        FLOATREG_XMM_IDX(1),
+        FLOATREG_XMM_IDX(2),
+        FLOATREG_XMM_IDX(3),
+        FLOATREG_XMM_IDX(4),
+        FLOATREG_XMM_IDX(5),
+        FLOATREG_XMM_IDX(6),
+        FLOATREG_XMM_IDX(7),
+        FLOATREG_XMM_IDX(8),
+        FLOATREG_XMM_IDX(9),
+        FLOATREG_XMM_IDX(10),
+        FLOATREG_XMM_IDX(11),
+        FLOATREG_XMM_IDX(12),
+        FLOATREG_XMM_IDX(13),
+        FLOATREG_XMM_IDX(14),
+        FLOATREG_XMM_IDX(15),
+        FLOATREG_XMM_IDX(16),
+        FLOATREG_XMM_IDX(17),
+        FLOATREG_XMM_IDX(18),
+        FLOATREG_XMM_IDX(19),
+        FLOATREG_XMM_IDX(20),
+        FLOATREG_XMM_IDX(21),
+        FLOATREG_XMM_IDX(22),
+        FLOATREG_XMM_IDX(23),
+        FLOATREG_XMM_IDX(24),
+        FLOATREG_XMM_IDX(25),
+        FLOATREG_XMM_IDX(26),
+        FLOATREG_XMM_IDX(27),
+        FLOATREG_XMM_IDX(28),
+        FLOATREG_XMM_IDX(29),
+        FLOATREG_XMM_IDX(30),
+        FLOATREG_XMM_IDX(31),
+#undef FLOATREG_XMM_IDX
 
-        FLOATREG_MICROFP_BASE = FLOATREG_XMM_BASE + 2 * NumXMMRegs,
+        FLOATREG_MICROFP_BASE = FLOATREG_XMM_BASE + NumXMMSubRegs * NumXMMRegs,
         FLOATREG_MICROFP0 = FLOATREG_MICROFP_BASE,
         FLOATREG_MICROFP1,
         FLOATREG_MICROFP2,
@@ -109,6 +120,14 @@ namespace X86ISA
         FLOATREG_MICROFP5,
         FLOATREG_MICROFP6,
         FLOATREG_MICROFP7,
+        FLOATREG_MICROFP8,
+        FLOATREG_MICROFP9,
+        FLOATREG_MICROFP10,
+        FLOATREG_MICROFP11,
+        FLOATREG_MICROFP12,
+        FLOATREG_MICROFP13,
+        FLOATREG_MICROFP14,
+        FLOATREG_MICROFP15,
 
         NUM_FLOATREGS = FLOATREG_MICROFP_BASE + NumMicroFpRegs
     };
@@ -128,13 +147,19 @@ namespace X86ISA
     static inline FloatRegIndex
     FLOATREG_XMM_LOW(int index)
     {
-        return (FloatRegIndex)(FLOATREG_XMM_BASE + 2 * index);
+        return (FloatRegIndex)(FLOATREG_XMM_BASE + NumXMMSubRegs * index);
     }
 
     static inline FloatRegIndex
     FLOATREG_XMM_HIGH(int index)
     {
-        return (FloatRegIndex)(FLOATREG_XMM_BASE + 2 * index + 1);
+        return (FloatRegIndex)(FLOATREG_XMM_BASE + NumXMMSubRegs * index + 1);
+    }
+
+    static inline FloatRegIndex
+    FLOATREG_XMM_IDX(int index, int sub_idx)
+    {
+        return (FloatRegIndex)(FLOATREG_XMM_BASE + NumXMMSubRegs * index + sub_idx);
     }
 
     static inline FloatRegIndex

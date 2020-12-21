@@ -76,16 +76,13 @@ def template MicroFpOpExecute {{
 def template MicroFpOpDeclare {{
     class %(class_name)s : public %(base_class)s
     {
-      private:
-        %(reg_idx_arr_decl)s;
-
       public:
         %(class_name)s(ExtMachInst _machInst,
                 const char * instMnem, uint64_t setFlags,
                 InstRegIndex _src1, InstRegIndex _src2, InstRegIndex _dest,
                 uint8_t _dataSize, int8_t _spm);
 
-        Fault execute(ExecContext *, Trace::InstRecord *) const override;
+        Fault execute(ExecContext *, Trace::InstRecord *) const;
     };
 }};
 
@@ -98,7 +95,6 @@ def template MicroFpOpConstructor {{
                 _src1, _src2, _dest, _dataSize, _spm,
                 %(op_class)s)
     {
-        %(set_reg_idx_arr)s;
         %(constructor)s;
     }
 }};
@@ -272,8 +268,69 @@ let {{
                 "spm" : self.spm}
 
     class Movfp(FpUnaryOp):
-        code = 'FpDestReg_uqw = FpSrcReg1_uqw;'
-        else_code = 'FpDestReg_uqw = FpDestReg_uqw;'
+        code = '''
+            FpDestReg_uqw = FpSrcReg1_uqw;
+            //hack("Move %s->%s %#x\\n", srcRegIdx(0), destRegIdx(0), FpSrcReg1_uqw);
+        '''
+        else_code = '''
+            FpDestReg_uqw = FpDestReg_uqw;
+            //hack("Unmove\\n");
+        '''
+        cond_check = "checkCondition(ccFlagBits | cfofBits | dfBit | \
+                                     ecfBit | ezfBit, src2)"
+        op_class = 'IntAluOp'
+
+    class Movfp128(FpUnaryOp):
+        code = '''
+            FpDestReg0_uqw = FpSrcReg1x0_uqw;
+            FpDestReg1_uqw = FpSrcReg1x1_uqw;
+        '''
+        else_code = '''
+            FpDestReg0_uqw = FpDestReg0_uqw;
+            FpDestReg1_uqw = FpDestReg1_uqw;
+        '''
+        cond_check = "checkCondition(ccFlagBits | cfofBits | dfBit | \
+                                     ecfBit | ezfBit, src2)"
+        op_class = 'IntAluOp'
+
+    class Movfp256(FpUnaryOp):
+        code = '''
+            FpDestReg0_uqw = FpSrcReg1x0_uqw;
+            FpDestReg1_uqw = FpSrcReg1x1_uqw;
+            FpDestReg2_uqw = FpSrcReg1x2_uqw;
+            FpDestReg3_uqw = FpSrcReg1x3_uqw;
+        '''
+        else_code = '''
+            FpDestReg0_uqw = FpDestReg0_uqw;
+            FpDestReg1_uqw = FpDestReg1_uqw;
+            FpDestReg2_uqw = FpDestReg2_uqw;
+            FpDestReg3_uqw = FpDestReg3_uqw;
+        '''
+        cond_check = "checkCondition(ccFlagBits | cfofBits | dfBit | \
+                                     ecfBit | ezfBit, src2)"
+        op_class = 'IntAluOp'
+
+    class Movfp512(FpUnaryOp):
+        code = '''
+            FpDestReg0_uqw = FpSrcReg1x0_uqw;
+            FpDestReg1_uqw = FpSrcReg1x1_uqw;
+            FpDestReg2_uqw = FpSrcReg1x2_uqw;
+            FpDestReg3_uqw = FpSrcReg1x3_uqw;
+            FpDestReg4_uqw = FpSrcReg1x4_uqw;
+            FpDestReg5_uqw = FpSrcReg1x5_uqw;
+            FpDestReg6_uqw = FpSrcReg1x6_uqw;
+            FpDestReg7_uqw = FpSrcReg1x7_uqw;
+        '''
+        else_code = '''
+            FpDestReg0_uqw = FpDestReg0_uqw;
+            FpDestReg1_uqw = FpDestReg1_uqw;
+            FpDestReg2_uqw = FpDestReg2_uqw;
+            FpDestReg3_uqw = FpDestReg3_uqw;
+            FpDestReg4_uqw = FpDestReg4_uqw;
+            FpDestReg5_uqw = FpDestReg5_uqw;
+            FpDestReg6_uqw = FpDestReg6_uqw;
+            FpDestReg7_uqw = FpDestReg7_uqw;
+        '''
         cond_check = "checkCondition(ccFlagBits | cfofBits | dfBit | \
                                      ecfBit | ezfBit, src2)"
         op_class = 'IntAluOp'
@@ -284,6 +341,27 @@ let {{
     class Sqrtfp(FpBinaryOp):
         code = 'FpDestReg = sqrt(FpSrcReg2);'
         op_class = 'FloatSqrtOp'
+
+    class Movfph2h(FpUnaryOp):
+        code = '''
+            uint64_t v = bits(FpSrcReg1_uqw, 63, 32);
+            FpDestReg_uqw = insertBits(FpDestReg_uqw, 63, 32, v);
+        '''
+        op_class = 'IntAluOp'
+
+    class Movfpl2h(FpUnaryOp):
+        code = '''
+            uint64_t v = bits(FpSrcReg1_uqw, 31, 0);
+            FpDestReg_uqw = insertBits(FpDestReg_uqw, 63, 32, v);
+        '''
+        op_class = 'IntAluOp'
+
+    class Movfpl2l(FpUnaryOp):
+        code = '''
+            uint64_t v = bits(FpSrcReg1_uqw, 31, 0);
+            FpDestReg_uqw = insertBits(FpDestReg_uqw, 31, 0, v);
+        '''
+        op_class = 'IntAluOp'
 
     class Cosfp(FpUnaryOp):
         code = 'FpDestReg = cos(FpSrcReg1);'

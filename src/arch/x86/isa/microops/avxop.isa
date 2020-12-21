@@ -1,0 +1,471 @@
+def template AVXOpExecute {{
+        Fault %(class_name)s::execute(
+            ExecContext *xc, Trace::InstRecord *traceData) const
+        {
+            Fault fault = NoFault;
+
+            %(op_decl)s;
+            %(op_rd)s;
+
+            %(code)s;
+
+            //Write the resulting state to the execution context
+            if(fault == NoFault)
+            {
+                %(op_wb)s;
+            }
+            return fault;
+        }
+}};
+
+def template AVXOpDeclare {{
+    class %(class_name)s : public %(base_class)s
+    {
+      public:
+        %(class_name)s(ExtMachInst _machInst, const char *_instMnem,
+                  uint64_t _setFlags, SrcType _srcType,
+                  InstRegIndex _dest, InstRegIndex _src1,
+                  InstRegIndex _src2, uint8_t _destSize, uint8_t _destVL,
+                  uint8_t _srcSize, uint8_t _srcVL,
+                  uint8_t _imm8, uint8_t _ext);
+
+        Fault execute(ExecContext *, Trace::InstRecord *) const;
+    };
+}};
+
+def template AVXOpConstructor {{
+    %(class_name)s::%(class_name)s(
+        ExtMachInst _machInst, const char *_instMnem,
+        uint64_t _setFlags, SrcType _srcType,
+        InstRegIndex _dest, InstRegIndex _src1,
+        InstRegIndex _src2, uint8_t _destSize, uint8_t _destVL,
+        uint8_t _srcSize, uint8_t _srcVL,
+        uint8_t _imm8, uint8_t _ext)
+        : %(base_class)s(_machInst, "%(mnemonic)s", _instMnem, _setFlags,
+        %(op_class)s, _srcType, _dest, _src1, _src2, _destSize, _destVL,
+        _srcSize, _srcVL, _imm8, _ext)
+    {
+        %(constructor)s;
+        %(constructorCode)s;
+    }
+}};
+
+let {{
+
+    import six
+
+    # Make these empty strings so that concatenating onto
+    # them will always work.
+    header_output = ""
+    decoder_output = ""
+    exec_output = ""
+
+    class AVXOpMeta(type):
+        def buildCppClasses(self, name, Name, suffix,
+            constructorCode, code, additional_params):
+
+            # Globals to stick the output in
+            global header_output
+            global decoder_output
+            global exec_output
+
+            base = "X86ISA::AVXOpBase"
+            templates = (
+                AVXOpDeclare,
+                AVXOpConstructor,
+                AVXOpExecute
+            )
+
+            # Get everything ready for the substitution
+            opt_args = []
+            if self.opClass:
+                opt_args.append(self.opClass)
+            iop = InstObjParams(
+                name,
+                Name + suffix,
+                base,
+                {
+                    "constructorCode": constructorCode,
+                    "code" : code
+                },
+                opt_args
+            )
+
+            # Generate the actual code (finally!)
+            header_output += templates[0].subst(iop)
+            decoder_output += templates[1].subst(iop)
+            exec_output += templates[2].subst(iop)
+
+
+        def __new__(mcls, Name, bases, dict):
+            abstract = False
+            name = Name.lower()
+            if "abstract" in dict:
+                abstract = dict['abstract']
+                del dict['abstract']
+            if not "opClass" in dict:
+                dict["opClass"] = None
+
+            cls = super(AVXOpMeta, mcls).__new__(mcls, Name, bases, dict)
+            if not abstract:
+                cls.className = Name
+                cls.base_mnemonic = name
+                constructorCode = cls.constructorCode
+                code = cls.code
+
+                # Set up the C++ classes
+                additional_params = []
+                if hasattr(cls, 'opClass'):
+                    additional_params.append(cls.opClass)
+                mcls.buildCppClasses(cls, name, Name, "",
+                    constructorCode, code, additional_params)
+
+                # Hook into the microassembler dict
+                global microopClasses
+                microopClasses[name] = cls
+
+            return cls
+
+    @six.add_metaclass(AVXOpMeta)
+    class AVXOp(X86Microop):
+        # This class itself doesn't act as a microop
+        abstract = True
+
+        def __init__(self, dest,
+            src1='InstRegIndex(0)',
+            src2='InstRegIndex(0)',
+            destSize=0,
+            destVL=16,
+            srcSize=0,
+            srcVL=16,
+            imm8=0,
+            ext=0):
+            self.dest = dest
+            self.src1 = src1
+            self.src2 = src2
+            self.destSize = destSize
+            self.destVL = destVL
+            self.srcSize = srcSize
+            self.srcVL = srcVL
+            self.imm8 = imm8
+            self.ext = ext
+
+        def getAllocator(self, microFlags):
+            className = self.className
+            allocator = '''new %(class_name)s(machInst, macrocodeBlock,
+                    %(flags)s, %(srcType)s, %(dest)s, %(src1)s, %(src2)s,
+                    %(destSize)s, %(destVL)s, %(srcSize)s, %(srcVL)s, %(imm8)s, %(ext)s)''' % {
+                "class_name" : className,
+                "flags" : self.microFlagsText(microFlags),
+                "srcType": self.srcType,
+                "src1" : self.src1, "src2" : self.src2,
+                "dest" : self.dest,
+                "srcSize" : self.srcSize,
+                "srcVL": self.srcVL,
+                "destSize" : self.destSize,
+                "destVL": self.destVL,
+                "imm8": self.imm8,
+                "ext" : self.ext}
+            return allocator
+
+    class Vclear(AVXOp):
+        # Helper microop to clear higher bits.
+        def __init__(self, dest, destVL):
+            super(Vclear, self).__init__(
+                dest=dest,
+                destVL=destVL,
+            )
+        opClass = 'SimdMiscOp'
+        srcType = 'AVXOpBase::SrcType::Non'
+        constructorCode = '''
+            // Add MAXVL-1:VL to destination.
+            auto vRegs = destVL / sizeof(uint64_t);
+            assert(vRegs <= NumXMMSubRegs && "VL overflow.");
+            _numDestRegs = NumXMMSubRegs - vRegs;
+            assert(_numDestRegs <= MaxInstDestRegs && "DestRegs overflow.");
+            _numFPDestRegs = _numDestRegs;
+            for (int i = 0; i < _numDestRegs; i++) {
+                setDestRegIdx(i, RegId(FloatRegClass, dest + i));
+            }
+        '''
+        code = '''
+            for (int i = 0; i < _numDestRegs; i++) {
+                xc->setFloatRegOperandBits(this, i, 0);
+            }
+        '''
+
+    class Varithp(AVXOp):
+        # Used in packed arithmetic ops, e.g. vaddps.
+        abstract = True
+        def __init__(self, dest, src1, src2, size, VL):
+            super(Varithp, self).__init__(
+                dest=dest, src1=src1, src2=src2,
+                destSize=size, destVL=VL, srcSize=size, srcVL=VL
+            )
+        srcType = 'AVXOpBase::SrcType::RegReg'
+        constructorCode = '''
+            this->addAVXDestRegs();
+            auto vRegs = destVL / sizeof(uint64_t);
+            _numSrcRegs = 2 * vRegs;
+            assert(_numSrcRegs <= MaxInstSrcRegs && "SrcRegs overflow.");
+            for (int i = 0; i < vRegs; i++) {
+                setSrcRegIdx(i * 2 + 0, RegId(FloatRegClass, src1 + i));
+                setSrcRegIdx(i * 2 + 1, RegId(FloatRegClass, src2 + i));
+            }
+        '''
+
+    class Vaddf(Varithp):
+        opClass = 'SimdFloatAddOp'
+        code = '''
+            this->doPackedBinaryOp(xc, BinaryOp::FloatAdd);
+        '''
+
+    class Vandf(Varithp):
+        opClass = 'SimdAddOp'
+        code = '''
+            this->doPackedBinaryOp(xc, BinaryOp::IntAnd);
+        '''
+
+    class Vsubf(Varithp):
+        opClass = 'SimdFloatAddOp'
+        code = '''
+            this->doPackedBinaryOp(xc, BinaryOp::FloatSub);
+        '''
+
+    class Vmulf(Varithp):
+        opClass = 'SimdFloatMultOp'
+        code = '''
+            this->doPackedBinaryOp(xc, BinaryOp::FloatMul);
+        '''
+
+    class Vdivf(Varithp):
+        opClass = 'SimdFloatDivOp'
+        code = '''
+            this->doPackedBinaryOp(xc, BinaryOp::FloatDiv);
+        '''
+
+    class Vaddi(Varithp):
+        opClass = 'SimdAddOp'
+        code = '''
+            this->doPackedBinaryOp(xc, BinaryOp::IntAdd);
+        '''
+
+    class Vsubi(Varithp):
+        opClass = 'SimdAddOp'
+        code = '''
+            this->doPackedBinaryOp(xc, BinaryOp::IntSub);
+        '''
+
+    class Vandi(Varithp):
+        opClass = 'SimdAddOp'
+        code = '''
+            this->doPackedBinaryOp(xc, BinaryOp::IntAnd);
+        '''
+
+    class Vminsi(Varithp):
+        opClass = 'SimdCmpOp'
+        code = '''
+            this->doPackedBinaryOp(xc, BinaryOp::SIntMin);
+        '''
+    
+    class Vfused(AVXOp):
+        # Used in packed arithmetic ops with three operands, e.g. vfmaddps
+        abstract = True
+        def __init__(self, dest, src1, src2, size, VL):
+            super(Vfused, self).__init__(
+                dest=dest, src1=src1, src2=src2,
+                destSize=size, destVL=VL, srcSize=size, srcVL=VL
+            )
+        srcType = 'AVXOpBase::SrcType::RegRegReg'
+        constructorCode = '''
+            this->addAVXDestRegs();
+            auto vRegs = destVL / sizeof(uint64_t);
+            _numSrcRegs = 3 * vRegs;
+            assert(_numSrcRegs <= MaxInstSrcRegs && "SrcRegs overflow.");
+            for (int i = 0; i < vRegs; i++) {
+                setSrcRegIdx(i * 3 + 0, RegId(FloatRegClass, src1 + i));
+                setSrcRegIdx(i * 3 + 1, RegId(FloatRegClass, src2 + i));
+                setSrcRegIdx(i * 3 + 2, RegId(FloatRegClass, dest + i));
+            }
+        '''
+    
+    class Vfmadd231f(Vfused):
+        opClass = 'SimdFloatMultOp'
+        code = '''
+            this->doFusedPackedBinaryOp(xc, BinaryOp::FloatMul, BinaryOp::FloatAdd);
+        '''
+
+    class Vbroadcast8(AVXOp):
+        def __init__(self, dest, src, destVL):
+            super(Vbroadcast8, self).__init__(
+                dest=dest, src1=src, destVL=destVL
+            )
+        srcType = 'AVXOpBase::SrcType::Reg'
+        constructorCode = '''
+            this->addAVXDestRegs();
+            _numSrcRegs = 1;
+            setSrcRegIdx(0, RegId(FloatRegClass, src1));
+        '''
+        code = '''
+            FloatInt src;
+            src.ul = xc->readFloatRegOperandBits(this, 0);
+            src.uc.i2 = src.uc.i1;
+            src.uc.i3 = src.uc.i1;
+            src.uc.i4 = src.uc.i1;
+            src.uc.i5 = src.uc.i1;
+            src.uc.i6 = src.uc.i1;
+            src.uc.i7 = src.uc.i1;
+            src.uc.i8 = src.uc.i1;
+            auto vDestRegs = destVL / sizeof(uint64_t);
+            for (int i = 0; i < vDestRegs; ++i) {
+                xc->setFloatRegOperandBits(this, i, src.ul);
+            }
+        '''
+
+    class Vbroadcast32(AVXOp):
+        def __init__(self, dest, src, destVL):
+            super(Vbroadcast32, self).__init__(
+                dest=dest, src1=src, destVL=destVL
+            )
+        srcType = 'AVXOpBase::SrcType::Reg'
+        constructorCode = '''
+            this->addAVXDestRegs();
+            _numSrcRegs = 1;
+            setSrcRegIdx(0, RegId(FloatRegClass, src1));
+        '''
+        code = '''
+            FloatInt src;
+            src.ul = xc->readFloatRegOperandBits(this, 0);
+            src.ui.i2 = src.ui.i1;
+            auto vDestRegs = destVL / sizeof(uint64_t);
+            for (int i = 0; i < vDestRegs; ++i) {
+                xc->setFloatRegOperandBits(this, i, src.ul);
+            }
+        '''
+
+    class Vbroadcast64(AVXOp):
+        def __init__(self, dest, src, destVL):
+            super(Vbroadcast64, self).__init__(
+                dest=dest, src1=src, destVL=destVL
+            )
+        srcType = 'AVXOpBase::SrcType::Reg'
+        constructorCode = '''
+            this->addAVXDestRegs();
+            _numSrcRegs = 1;
+            setSrcRegIdx(0, RegId(FloatRegClass, src1));
+        '''
+        code = '''
+            FloatInt src;
+            src.ul = xc->readFloatRegOperandBits(this, 0);
+            auto vDestRegs = destVL / sizeof(uint64_t);
+            for (int i = 0; i < vDestRegs; ++i) {
+                xc->setFloatRegOperandBits(this, i, src.ul);
+            }
+        '''
+
+    class Vcvtp(AVXOp):
+        # Used in packed convert ops, e.g. vcvtps2pd.
+        abstract = True
+        def __init__(self, dest, src, VL):
+            super(Varithp, self).__init__(
+                dest=dest, src1=src1, destVL=VL, srcVL=VL
+            )
+        srcType = 'AVXOpBase::SrcType::Reg'
+        constructorCode = '''
+            this->addAVXDestRegs();
+            auto vRegs = destVL / sizeof(uint64_t);
+            _numSrcRegs = vRegs;
+            assert(_numSrcRegs <= MaxInstSrcRegs && "SrcRegs overflow.");
+            for (int i = 0; i < vRegs; i++) {
+                setSrcRegIdx(i, RegId(FloatRegClass, src1 + i));
+            }
+        '''
+
+    class Valign(AVXOp):
+        def __init__(self, dest, src1, src2, imm8, VL, size):
+            super(Valign, self).__init__(
+                dest=dest, src1=src1, src2=src2, imm8=imm8,
+                srcVL=VL, destVL=VL, srcSize=size, destSize=size,
+            )
+        srcType = 'AVXOpBase::SrcType::RegRegImm'
+        constructorCode = '''
+            this->addAVXDestRegs();
+            auto vRegs = srcVL / sizeof(uint64_t);
+            _numSrcRegs = 2 * vRegs;
+            assert(_numSrcRegs <= MaxInstSrcRegs && "SrcRegs overflow.");
+            // First src1, then src2.
+            for (int i = 0; i < vRegs; i++) {
+                setSrcRegIdx(i, RegId(FloatRegClass, src1 + i));
+                setSrcRegIdx(i + vRegs, RegId(FloatRegClass, src2 + i));
+            }
+        '''
+        code = '''
+            int shift = imm8;
+            auto vDestRegs = destVL / sizeof(uint64_t);
+            FloatInt src;
+            if (srcSize == 8) {
+                for (int i = 0; i < vDestRegs; ++i) {
+                    auto idx = i + shift;
+                    src.ul = xc->readFloatRegOperandBits(this, idx);
+                    xc->setFloatRegOperandBits(this, i, src.ul);
+                }
+            } else if (srcSize == 4) {
+                if (shift % 2 == 0) {
+                    for (int i = 0; i < vDestRegs; ++i) {
+                        auto idx = i + shift / 2;
+                        src.ul = xc->readFloatRegOperandBits(this, idx);
+                        xc->setFloatRegOperandBits(this, i, src.ul);
+                    }
+                } else {
+                    for (int i = 0; i < vDestRegs; ++i) {
+                        auto idx = i + shift / 2;
+                        src.ul = xc->readFloatRegOperandBits(this, idx);
+                        FloatInt result;
+                        result.ui.i1 = src.ui.i2;
+                        src.ul = xc->readFloatRegOperandBits(this, idx + 1);
+                        result.ui.i2 = src.ui.i1;
+                        xc->setFloatRegOperandBits(this, i, result.ul);
+                    }
+                }
+            }
+        '''
+
+    class Vpternlog(AVXOp):
+        def __init__(self, dest, src1, src2, imm8, VL, size):
+            super(Vpternlog, self).__init__(
+                dest=dest, src1=src1, src2=src2, imm8=imm8,
+                srcVL=VL, destVL=VL, srcSize=size, destSize=size,
+            )
+            # So far destSize/srcSize is not used.
+        srcType = 'AVXOpBase::SrcType::RegRegImm'
+        constructorCode = '''
+            this->addAVXDestRegs();
+            auto vRegs = srcVL / sizeof(uint64_t);
+            _numSrcRegs = 3 * vRegs;
+            assert(_numSrcRegs <= MaxInstSrcRegs && "SrcRegs overflow.");
+            // First dest, src1, then src2.
+            for (int i = 0; i < vRegs; i++) {
+                setSrcRegIdx(i * 3 + 0, RegId(FloatRegClass, dest + i));
+                setSrcRegIdx(i * 3 + 1, RegId(FloatRegClass, src1 + i));
+                setSrcRegIdx(i * 3 + 2, RegId(FloatRegClass, src2 + i));
+            }
+        '''
+        code = '''
+            auto vDestRegs = destVL / sizeof(uint64_t);
+            for (int i = 0; i < vDestRegs; ++i) {
+                uint64_t result = 0;
+                uint64_t destValue = xc->readFloatRegOperandBits(this, i * 3 + 0);
+                uint64_t src1Value = xc->readFloatRegOperandBits(this, i * 3 + 1);
+                uint64_t src2Value = xc->readFloatRegOperandBits(this, i * 3 + 2);
+                for (int bit = 0; bit < sizeof(uint64_t) * 8; ++bit) {
+                    int destBit = (destValue >> bit) & 0x1;
+                    int src1Bit = (src1Value >> bit) & 0x1;
+                    int src2Bit = (src2Value >> bit) & 0x1;
+                    int idx = (destBit << 2) | (src1Bit << 1) | src2Bit;
+                    int resultBit = (imm8 >> idx) & 0x1;
+                    result |= (resultBit << bit);
+                }
+                xc->setFloatRegOperandBits(this, i, result);
+            }
+        '''
+}};

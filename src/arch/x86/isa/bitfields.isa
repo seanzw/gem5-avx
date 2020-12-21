@@ -86,5 +86,10 @@ def bitfield MODE mode;
 def bitfield MODE_MODE mode.mode;
 def bitfield MODE_SUBMODE mode.submode;
 
-def bitfield VEX_V vex.v;
-def bitfield VEX_L vex.l;
+def bitfield VEX_PRESENT      evex.vex_present;
+def bitfield EVEX_PRESENT     evex.evex_present;
+def bitfield EVEX_PREFIX_TYPE evex.present;
+def bitfield EVEX_L           evex.l;
+def bitfield EVEX_L_PRIME     evex.l_prime;
+def bitfield EVEX_L_EXTEND    evex.l_extend;
+def bitfield EVEX_R_PRIME     evex.r_prime;

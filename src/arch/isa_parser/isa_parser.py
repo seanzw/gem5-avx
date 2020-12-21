@@ -666,6 +666,14 @@ class ISAParser(Grammar):
                     print('#define __SPLIT %u' % i, file=f)
                 print('#include "%s"' % fn, file=f)
                 print('}', file=f)
+        
+        # max_inst_regs.hh
+        # ! Make sure x86 has at least 8 dest regs and 24 src regs.
+        if self.namespace == 'X86ISAInst':
+            if self.maxInstDestRegs < 8:
+                self.maxInstDestRegs = 8
+            if self.maxInstSrcRegs < 24:
+                self.maxInstSrcRegs = 24
 
         # max_inst_regs.hh
         self.update('max_inst_regs.hh',
