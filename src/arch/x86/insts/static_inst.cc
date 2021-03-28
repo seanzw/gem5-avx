@@ -121,9 +121,10 @@ namespace X86ISA
     X86StaticInst::printReg(std::ostream &os, RegId reg, int size) const
     {
         if (reg.isFloatReg()) {
-          // We allow xmm registers to have 128, 256 and 512.
+            // We allow xmm registers to have 128, 256 and 512.
             assert(size == 1 || size == 2 || size == 4 || size == 8 ||
-                   size == 16 || size == 32 || size == 64);
+                    size == 16 || size == 32 || size == 48 || size == 52 ||
+                    size == 64);
         } else {
             assert(size == 1 || size == 2 || size == 4 || size == 8);
         }
