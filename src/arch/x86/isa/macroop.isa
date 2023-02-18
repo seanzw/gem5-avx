@@ -76,6 +76,7 @@ output header {{
 
 // Basic instruction class declaration template.
 def template MacroDeclare {{
+    GEM5_DEPRECATED_NAMESPACE(X86Macroop, x86_macroop);
     namespace x86_macroop
     {
         /**
@@ -303,6 +304,12 @@ let {{
                 self.dataSize = "(REX_W ? 8 : 4)"
             elif self.size == 'q':
                 self.dataSize = 8
+            elif self.size == 'o':
+                self.dataSize = 16
+            elif self.size == 'do':
+                self.dataSize = 32
+            elif self.size == 'qo':
+                self.dataSize = 64
             elif self.size == 'v':
                 self.dataSize = "OPSIZE"
             elif self.size == 'w':

@@ -73,40 +73,51 @@ enum FloatRegIndex
     _Fpr7Idx,
 
     XmmBase = MmxBase + NumMMXRegs,
-    _Xmm0LowIdx = XmmBase,
-    _Xmm0HighIdx,
-    _Xmm1LowIdx,
-    _Xmm1HighIdx,
-    _Xmm2LowIdx,
-    _Xmm2HighIdx,
-    _Xmm3LowIdx,
-    _Xmm3HighIdx,
-    _Xmm4LowIdx,
-    _Xmm4HighIdx,
-    _Xmm5LowIdx,
-    _Xmm5HighIdx,
-    _Xmm6LowIdx,
-    _Xmm6HighIdx,
-    _Xmm7LowIdx,
-    _Xmm7HighIdx,
-    _Xmm8LowIdx,
-    _Xmm8HighIdx,
-    _Xmm9LowIdx,
-    _Xmm9HighIdx,
-    _Xmm10LowIdx,
-    _Xmm10HighIdx,
-    _Xmm11LowIdx,
-    _Xmm11HighIdx,
-    _Xmm12LowIdx,
-    _Xmm12HighIdx,
-    _Xmm13LowIdx,
-    _Xmm13HighIdx,
-    _Xmm14LowIdx,
-    _Xmm14HighIdx,
-    _Xmm15LowIdx,
-    _Xmm15HighIdx,
+    // ! Keep consistent with NumXMMSubRegs
+#define FLOATREG_XMM_IDX(i) \
+    _Xmm ## i ## _0Idx = XmmBase + i * NumXMMSubRegs + 0, \
+    _Xmm ## i ## _1Idx = XmmBase + i * NumXMMSubRegs + 1, \
+    _Xmm ## i ## _2Idx = XmmBase + i * NumXMMSubRegs + 2, \
+    _Xmm ## i ## _3Idx = XmmBase + i * NumXMMSubRegs + 3, \
+    _Xmm ## i ## _4Idx = XmmBase + i * NumXMMSubRegs + 4, \
+    _Xmm ## i ## _5Idx = XmmBase + i * NumXMMSubRegs + 5, \
+    _Xmm ## i ## _6Idx = XmmBase + i * NumXMMSubRegs + 6, \
+    _Xmm ## i ## _7Idx = XmmBase + i * NumXMMSubRegs + 7
+    FLOATREG_XMM_IDX(0),
+    FLOATREG_XMM_IDX(1),
+    FLOATREG_XMM_IDX(2),
+    FLOATREG_XMM_IDX(3),
+    FLOATREG_XMM_IDX(4),
+    FLOATREG_XMM_IDX(5),
+    FLOATREG_XMM_IDX(6),
+    FLOATREG_XMM_IDX(7),
+    FLOATREG_XMM_IDX(8),
+    FLOATREG_XMM_IDX(9),
+    FLOATREG_XMM_IDX(10),
+    FLOATREG_XMM_IDX(11),
+    FLOATREG_XMM_IDX(12),
+    FLOATREG_XMM_IDX(13),
+    FLOATREG_XMM_IDX(14),
+    FLOATREG_XMM_IDX(15),
+    FLOATREG_XMM_IDX(16),
+    FLOATREG_XMM_IDX(17),
+    FLOATREG_XMM_IDX(18),
+    FLOATREG_XMM_IDX(19),
+    FLOATREG_XMM_IDX(20),
+    FLOATREG_XMM_IDX(21),
+    FLOATREG_XMM_IDX(22),
+    FLOATREG_XMM_IDX(23),
+    FLOATREG_XMM_IDX(24),
+    FLOATREG_XMM_IDX(25),
+    FLOATREG_XMM_IDX(26),
+    FLOATREG_XMM_IDX(27),
+    FLOATREG_XMM_IDX(28),
+    FLOATREG_XMM_IDX(29),
+    FLOATREG_XMM_IDX(30),
+    FLOATREG_XMM_IDX(31),
+#undef FLOATREG_XMM_IDX
 
-    MicrofpBase = XmmBase + 2 * NumXMMRegs,
+    MicrofpBase = XmmBase + NumXMMSubRegs * NumXMMRegs,
     _Microfp0Idx = MicrofpBase,
     _Microfp1Idx,
     _Microfp2Idx,
@@ -115,6 +126,14 @@ enum FloatRegIndex
     _Microfp5Idx,
     _Microfp6Idx,
     _Microfp7Idx,
+    _Microfp8Idx,
+    _Microfp9Idx,
+    _Microfp10Idx,
+    _Microfp11Idx,
+    _Microfp12Idx,
+    _Microfp13Idx,
+    _Microfp14Idx,
+    _Microfp15Idx,
 
     NumRegs = MicrofpBase + NumMicroFpRegs
 };
@@ -164,19 +183,25 @@ fpr(int index)
 static inline RegId
 xmm(int index)
 {
-    return floatRegClass[XmmBase + index];
+    return floatRegClass[XmmBase + NumXMMSubRegs * index];
 }
 
 static inline RegId
 xmmLow(int index)
 {
-    return floatRegClass[XmmBase + 2 * index];
+    return floatRegClass[XmmBase + NumXMMSubRegs * index];
 }
 
 static inline RegId
 xmmHigh(int index)
 {
-    return floatRegClass[XmmBase + 2 * index + 1];
+    return floatRegClass[XmmBase + NumXMMSubRegs * index + 1];
+}
+
+static inline RegId
+xmmIdx(int index, int sub_idx)
+{
+    return floatRegClass[XmmBase + NumXMMSubRegs * index + sub_idx];
 }
 
 static inline RegId

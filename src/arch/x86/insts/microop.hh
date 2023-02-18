@@ -48,6 +48,7 @@ namespace gem5
 namespace X86ISA
 {
 
+GEM5_DEPRECATED_NAMESPACE(ConditionTests, condition_tests);
 namespace condition_tests
 {
 
@@ -96,6 +97,8 @@ enum CondTest
 //set necessary flags appropriately.
 class X86MicroopBase : public X86StaticInst
 {
+  public:
+    std::string getInstMnem() const { return instMnem; }
   protected:
     const char * instMnem;
     uint8_t opSize;

@@ -260,7 +260,7 @@
                     0x5: UNPCKHPD(Vo,Wo);
                     0x6: MOVHPD(Vq,Mq);
                     0x7: MOVHPD(Mq,Vq);
-            }
+                }
                 // repne (0xF2)
                 0x8: decode OPCODE_OP_BOTTOM3 {
                     0x0: MOVSD(Vq,Wq);

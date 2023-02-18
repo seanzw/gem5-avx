@@ -53,6 +53,12 @@ namespace X86ISA
 {
 
 /**
+ * ! AVX-512 microops still uses a fixed size src/dest reg array.
+ */
+const int MaxInstSrcRegs = 32;
+const int MaxInstDestRegs = 8;
+
+/**
  * Classes for register indices passed to instruction constructors. Using a
  * wrapper struct for these lets take advantage of the compiler's type
  * checking.

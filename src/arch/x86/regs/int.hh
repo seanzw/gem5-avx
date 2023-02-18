@@ -49,7 +49,6 @@ namespace gem5
 
 namespace X86ISA
 {
-
 BitUnion64(X86IntReg)
     Bitfield<63,0> R;
     SignedBitfield<63,0> SR;
@@ -84,6 +83,19 @@ enum : RegIndex
     _R13Idx,
     _R14Idx,
     _R15Idx,
+
+    /**
+     * Implement the mask register as integer register.
+     */
+    _MaskBase,
+    _K0Idx = _MaskBase,
+    _K1Idx,
+    _K2Idx,
+    _K3Idx,
+    _K4Idx,
+    _K5Idx,
+    _K6Idx,
+    _K7Idx,
 
     NumArchRegs,
     MicroBegin = NumArchRegs,
@@ -145,6 +157,14 @@ inline constexpr RegId
     R13 = intRegClass[_R13Idx],
     R14 = intRegClass[_R14Idx],
     R15 = intRegClass[_R15Idx],
+    K0 = intRegClass[_K0Idx],
+    K1 = intRegClass[_K1Idx],
+    K2 = intRegClass[_K2Idx],
+    K3 = intRegClass[_K3Idx],
+    K4 = intRegClass[_K4Idx],
+    K5 = intRegClass[_K5Idx],
+    K6 = intRegClass[_K6Idx],
+    K7 = intRegClass[_K7Idx],
     T0 = intRegClass[_T0Idx],
     Prodlow = intRegClass[_ProdlowIdx],
     Prodhi = intRegClass[_ProdhiIdx],
@@ -189,6 +209,12 @@ intRegFolded(RegIndex index, RegIndex foldBit)
     if ((index & 0x1C) == 4 && foldBit)
         index = (index - 4) | foldBit;
     return intRegClass[index];
+}
+
+inline static constexpr RegId
+MASKREG_K(int index)
+{
+    return intRegClass[int_reg::_MaskBase + index];
 }
 
 } // namespace X86ISA

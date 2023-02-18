@@ -90,6 +90,10 @@ class Decoder : public InstDecoder
 
     static InstBytes dummy;
 
+    // For DPRINTF.
+    const std::string _name;
+    std::string name() const override { return _name; }
+
     // The bytes to be predecoded.
     MachInst fetchChunk;
     InstBytes *instBytes = &dummy;
@@ -194,6 +198,9 @@ class Decoder : public InstDecoder
         Vex2Of3State,
         Vex3Of3State,
         VexOpcodeState,
+        EVex2Of4State,
+        EVex3Of4State,
+        EVex4Of4State,
         OneByteOpcodeState,
         TwoByteOpcodeState,
         ThreeByte0F38OpcodeState,
@@ -215,6 +222,9 @@ class Decoder : public InstDecoder
     State doVex2Of2State(uint8_t);
     State doVex2Of3State(uint8_t);
     State doVex3Of3State(uint8_t);
+    State doEVex2Of4State(uint8_t);
+    State doEVex3Of4State(uint8_t);
+    State doEVex4Of4State(uint8_t);
     State doVexOpcodeState(uint8_t);
     State doOneByteOpcodeState(uint8_t);
     State doTwoByteOpcodeState(uint8_t);
@@ -230,6 +240,9 @@ class Decoder : public InstDecoder
                         bool addrSizedImm = false);
     // Process the opcode found with VEX / XOP prefix.
     State processExtendedOpcode(ByteTable &immTable);
+
+    // Process the Compressed displacement in EVEX.
+    void processCompressedDisplacement();
 
   protected:
     /// Caching for decoded instruction objects.
@@ -256,6 +269,7 @@ class Decoder : public InstDecoder
     void process();
 
   public:
+    PARAMS(X86Decoder)
     Decoder(const X86DecoderParams &p) : InstDecoder(p, &fetchChunk)
     {
         emi.reset();

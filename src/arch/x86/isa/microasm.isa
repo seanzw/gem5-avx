@@ -79,7 +79,7 @@ let {{
     # Add in symbols for the microcode registers
     for num in range(16):
         assembler.symbols["t%d" % num] = gpRegIdx("intRegMicro(%d)" % num)
-    for num in range(8):
+    for num in range(16):
         assembler.symbols["ufp%d" % num] = \
             fpRegIdx("float_reg::microfp(%d)" % num)
     # Add in symbols for the segment descriptor registers
@@ -107,14 +107,41 @@ let {{
         "sr" : segRegIdx("env.reg"),
         "xmml" : fpRegIdx("float_reg::xmmLow(env.reg)"),
         "xmmh" : fpRegIdx("float_reg::xmmHigh(env.reg)"),
+        "xmm0" : fpRegIdx("float_reg::xmmIdx(env.reg, 0)"),
+        "xmm1" : fpRegIdx("float_reg::xmmIdx(env.reg, 1)"),
+        "xmm2" : fpRegIdx("float_reg::xmmIdx(env.reg, 2)"),
+        "xmm3" : fpRegIdx("float_reg::xmmIdx(env.reg, 3)"),
+        "xmm4" : fpRegIdx("float_reg::xmmIdx(env.reg, 4)"),
+        "xmm5" : fpRegIdx("float_reg::xmmIdx(env.reg, 5)"),
+        "xmm6" : fpRegIdx("float_reg::xmmIdx(env.reg, 6)"),
+        "xmm7" : fpRegIdx("float_reg::xmmIdx(env.reg, 7)"),
         "regm" : gpRegIdx("env.regm"),
         "crm" : crRegIdx("env.regm"),
         "drm" : drRegIdx("env.regm"),
         "srm" : segRegIdx("env.regm"),
         "xmmlm" : fpRegIdx("float_reg::xmmLow(env.regm)"),
         "xmmhm" : fpRegIdx("float_reg::xmmHigh(env.regm)"),
+        "xmm0m" : fpRegIdx("float_reg::xmmIdx(env.regm, 0)"),
+        "xmm1m" : fpRegIdx("float_reg::xmmIdx(env.regm, 1)"),
+        "xmm2m" : fpRegIdx("float_reg::xmmIdx(env.regm, 2)"),
+        "xmm3m" : fpRegIdx("float_reg::xmmIdx(env.regm, 3)"),
+        "xmm4m" : fpRegIdx("float_reg::xmmIdx(env.regm, 4)"),
+        "xmm5m" : fpRegIdx("float_reg::xmmIdx(env.regm, 5)"),
+        "xmm6m" : fpRegIdx("float_reg::xmmIdx(env.regm, 6)"),
+        "xmm7m" : fpRegIdx("float_reg::xmmIdx(env.regm, 7)"),
+        "xmm0v" : fpRegIdx("float_reg::xmmIdx(machInst.evex.v_extend, 0)"),
+        "xmm1v" : fpRegIdx("float_reg::xmmIdx(machInst.evex.v_extend, 1)"),
+        "xmm2v" : fpRegIdx("float_reg::xmmIdx(machInst.evex.v_extend, 2)"),
+        "xmm3v" : fpRegIdx("float_reg::xmmIdx(machInst.evex.v_extend, 3)"),
+        "xmm4v" : fpRegIdx("float_reg::xmmIdx(machInst.evex.v_extend, 4)"),
+        "xmm5v" : fpRegIdx("float_reg::xmmIdx(machInst.evex.v_extend, 5)"),
+        "xmm6v" : fpRegIdx("float_reg::xmmIdx(machInst.evex.v_extend, 6)"),
+        "xmm7v" : fpRegIdx("float_reg::xmmIdx(machInst.evex.v_extend, 7)"),
         "mmx" : fpRegIdx("float_reg::mmx(env.reg)"),
         "mmxm" : fpRegIdx("float_reg::mmx(env.regm)"),
+        "maskk"  : gpRegIdx("MASKREG_K(env.reg)"),
+        "maskkm" : gpRegIdx("MASKREG_K(env.regm)"),
+        "maskka" : gpRegIdx("MASKREG_K(machInst.evex.a)"),
         "imm" : "adjustedImm",
         "disp" : "adjustedDisp",
         "seg" : segRegIdx("env.seg"),

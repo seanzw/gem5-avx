@@ -31,6 +31,8 @@ gem5 while still being functinal.
 """
 
 from gem5.resources.resource import Resource
+import os
+from gem5.resources.resource import CustomResource
 from gem5.components.processors.cpu_types import (
     get_cpu_types_str_set,
     get_cpu_type_from_str,
@@ -127,6 +129,11 @@ else:
         num_cores=args.num_cores,
     )
 
+    if cpu_enum == CPUTypes.O3 and args.resource == "avxtests":
+        for core in processor.cores:
+            print(core.core)
+            core.core.numPhysFloatRegs = 1024
+
 motherboard = SimpleBoard(
     clk_freq="3GHz",
     processor=processor,
@@ -135,7 +142,8 @@ motherboard = SimpleBoard(
 )
 
 # Set the workload
-binary = Resource(args.resource, resource_directory=args.resource_directory)
+# binary = Resource(args.resource, resource_directory=args.resource_directory)
+binary = CustomResource(os.path.join(args.resource_directory, args.resource))
 motherboard.set_se_binary_workload(binary, arguments=args.arguments)
 
 # Run the simulation

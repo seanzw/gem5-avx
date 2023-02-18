@@ -51,6 +51,7 @@ Source('faults.cc', tags='x86 isa')
 Source('fs_workload.cc', tags='x86 isa')
 Source('insts/badmicroop.cc', tags='x86 isa')
 Source('insts/microop.cc', tags='x86 isa')
+Source('insts/microavxop.cc', tags='x86 isa')
 Source('insts/microregop.cc', tags='x86 isa')
 Source('insts/static_inst.cc', tags='x86 isa')
 Source('interrupts.cc', tags='x86 isa')
@@ -63,6 +64,7 @@ Source('remote_gdb.cc', tags='x86 isa')
 Source('tlb.cc', tags='x86 isa')
 Source('types.cc', tags='x86 isa')
 Source('utility.cc', tags='x86 isa')
+Source('decompress_displacement.cc', tags='x86 isa')
 
 SimObject('X86SeWorkload.py', sim_objects=['X86EmuLinux'], tags='x86 isa')
 SimObject('X86FsWorkload.py',
@@ -81,6 +83,8 @@ SimObject('X86CPU.py', sim_objects=[], tags='x86 isa')
 DebugFlag('LocalApic', "Local APIC debugging", tags='x86 isa')
 DebugFlag('X86', "Generic X86 ISA debugging", tags='x86 isa')
 DebugFlag('ACPI', "ACPI debugging", tags='x86 isa')
+DebugFlag('X86AVX', "X86 ISA AVX debugging", tags='x86 isa')
+DebugFlag('X86MediaMicroop', "X86 Media Microop debugging", tags='x86 isa')
 
 python_files = (
     '__init__.py',

@@ -263,12 +263,88 @@ let {{
                                      ecfBit | ezfBit, src1)"
         op_class = 'IntAluOp'
 
+    class Movfp128(Fp2Op):
+        code = '''
+            FpDestReg0_uqw = FpSrcReg1x0_uqw;
+            FpDestReg1_uqw = FpSrcReg1x1_uqw;
+        '''
+        else_code = '''
+            FpDestReg0_uqw = FpDestReg0_uqw;
+            FpDestReg1_uqw = FpDestReg1_uqw;
+        '''
+        cond_check = "checkCondition(ccFlagBits | cfofBits | dfBit | \
+                                     ecfBit | ezfBit, src1)"
+        op_class = 'IntAluOp'
+
+    class Movfp256(Fp2Op):
+        code = '''
+            FpDestReg0_uqw = FpSrcReg1x0_uqw;
+            FpDestReg1_uqw = FpSrcReg1x1_uqw;
+            FpDestReg2_uqw = FpSrcReg1x2_uqw;
+            FpDestReg3_uqw = FpSrcReg1x3_uqw;
+        '''
+        else_code = '''
+            FpDestReg0_uqw = FpDestReg0_uqw;
+            FpDestReg1_uqw = FpDestReg1_uqw;
+            FpDestReg2_uqw = FpDestReg2_uqw;
+            FpDestReg3_uqw = FpDestReg3_uqw;
+        '''
+        cond_check = "checkCondition(ccFlagBits | cfofBits | dfBit | \
+                                     ecfBit | ezfBit, src1)"
+        op_class = 'IntAluOp'
+
+    class Movfp512(Fp2Op):
+        code = '''
+            FpDestReg0_uqw = FpSrcReg1x0_uqw;
+            FpDestReg1_uqw = FpSrcReg1x1_uqw;
+            FpDestReg2_uqw = FpSrcReg1x2_uqw;
+            FpDestReg3_uqw = FpSrcReg1x3_uqw;
+            FpDestReg4_uqw = FpSrcReg1x4_uqw;
+            FpDestReg5_uqw = FpSrcReg1x5_uqw;
+            FpDestReg6_uqw = FpSrcReg1x6_uqw;
+            FpDestReg7_uqw = FpSrcReg1x7_uqw;
+        '''
+        else_code = '''
+            FpDestReg0_uqw = FpDestReg0_uqw;
+            FpDestReg1_uqw = FpDestReg1_uqw;
+            FpDestReg2_uqw = FpDestReg2_uqw;
+            FpDestReg3_uqw = FpDestReg3_uqw;
+            FpDestReg4_uqw = FpDestReg4_uqw;
+            FpDestReg5_uqw = FpDestReg5_uqw;
+            FpDestReg6_uqw = FpDestReg6_uqw;
+            FpDestReg7_uqw = FpDestReg7_uqw;
+        '''
+        cond_check = "checkCondition(ccFlagBits | cfofBits | dfBit | \
+                                     ecfBit | ezfBit, src1)"
+        op_class = 'IntAluOp'
+
     class Xorfp(Fp3Op):
         code = 'FpDestReg_uqw = FpSrcReg1_uqw ^ FpSrcReg2_uqw;'
 
     class Sqrtfp(Fp2Op):
         code = 'FpDestReg = sqrt(FpSrcReg1);'
         op_class = 'FloatSqrtOp'
+
+    class Movfph2h(Fp2Op):
+        code = '''
+            uint64_t v = bits(FpSrcReg1_uqw, 63, 32);
+            FpDestReg_uqw = insertBits(FpDestReg_uqw, 63, 32, v);
+        '''
+        op_class = 'IntAluOp'
+
+    class Movfpl2h(Fp2Op):
+        code = '''
+            uint64_t v = bits(FpSrcReg1_uqw, 31, 0);
+            FpDestReg_uqw = insertBits(FpDestReg_uqw, 63, 32, v);
+        '''
+        op_class = 'IntAluOp'
+
+    class Movfpl2l(Fp2Op):
+        code = '''
+            uint64_t v = bits(FpSrcReg1_uqw, 31, 0);
+            FpDestReg_uqw = insertBits(FpDestReg_uqw, 31, 0, v);
+        '''
+        op_class = 'IntAluOp'
 
     class Cosfp(Fp2Op):
         code = 'FpDestReg = cos(FpSrcReg1);'

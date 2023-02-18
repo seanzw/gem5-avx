@@ -36,6 +36,7 @@
 categories = [
     "romutil",
     "general_purpose",
+    "simd512",
     "simd128",
     "simd64",
     "system",

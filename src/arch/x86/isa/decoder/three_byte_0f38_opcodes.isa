@@ -29,8 +29,8 @@
 // Decode the three byte opcodes with the 0f38 prefix.
 //
 'X86ISA::ThreeByte0F38Opcode': decode LEGACY_OP {
-    format WarnUnimpl {
-        1: decode OPCODE_OP {
+    1: decode OPCODE_OP {
+        format WarnUnimpl {
             0x00: Inst::PSHUFB(Vo, Wo);
             0x01: phaddw_Vdq_Wdq();
             0x02: phaddd_Vdq_Wdq();
@@ -141,13 +141,17 @@
             }
             default: Inst::UD2();
         }
-        default: decode LEGACY_REPNE {
-            1: decode OPCODE_OP {
+    }
+    default: decode LEGACY_REPNE {
+        1: decode OPCODE_OP {
+            format WarnUnimpl {
                 0xF0: crc32_Gd_Eb();
                 0xF1: crc32_Gd_Ev();
                 default: Inst::UD2();
             }
-            default: decode OPCODE_OP {
+        }
+        default: decode OPCODE_OP {
+            format WarnUnimpl {
                 0x00: pshufb_Pq_Qq();
                 0x01: phaddw_Pq_Qq();
                 0x02: phaddd_Pq_Qq();
@@ -163,8 +167,8 @@
                 0x1C: pabsb_Pq_Qq();
                 0x1D: pabsw_Pq_Qq();
                 0x1E: pabsd_Pq_Qq();
-                default: Inst::UD2();
             }
+            default: Inst::UD2();
         }
     }
 }

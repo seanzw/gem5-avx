@@ -141,7 +141,13 @@ X86StaticInst::divideStep(uint64_t dividend, uint64_t divisor,
 void
 X86StaticInst::printReg(std::ostream &os, RegId reg, int size)
 {
-    assert(size == 1 || size == 2 || size == 4 || size == 8);
+    if (reg.classValue() == RegClassType::FloatRegClass) {
+        // We allow xmm registers to have 128, 256 and 512.
+        // assert(size == 1 || size == 2 || size == 4 || size == 8 ||
+        //        size == 16 || size == 32 || size == 48 || size == 64);
+    } else {
+    // assert(size == 1 || size == 2 || size == 4 || size == 8);
+    }
     static const char * abcdFormats[9] =
         {"", "%s",  "%sx",  "", "e%sx", "", "", "", "r%sx"};
     static const char * piFormats[9] =
@@ -164,6 +170,12 @@ X86StaticInst::printReg(std::ostream &os, RegId reg, int size)
                 suffix = "h";
             else if (reg_idx < 8 && size == 1)
                 suffix = "l";
+
+            if (!(size == 1 || size == 2 || size == 4 || size == 8)) {
+                // Alert about the size.
+                ccprintf(os, "[!size=%d]", size);
+                size = 8;
+            }
 
             switch (reg_idx) {
               case int_reg::Rax:
@@ -214,6 +226,30 @@ X86StaticInst::printReg(std::ostream &os, RegId reg, int size)
               case int_reg::R15:
                 ccprintf(os, longFormats[size], "15");
                 break;
+              case int_reg::K0:
+                ccprintf(os, longFormats[size], "k0");
+                break;
+              case int_reg::K1:
+                ccprintf(os, longFormats[size], "k1");
+                break;
+              case int_reg::K2:
+                ccprintf(os, longFormats[size], "k2");
+                break;
+              case int_reg::K3:
+                ccprintf(os, longFormats[size], "k3");
+                break;
+              case int_reg::K4:
+                ccprintf(os, longFormats[size], "k4");
+                break;
+              case int_reg::K5:
+                ccprintf(os, longFormats[size], "k5");
+                break;
+              case int_reg::K6:
+                ccprintf(os, longFormats[size], "k6");
+                break;
+              case int_reg::K7:
+                ccprintf(os, longFormats[size], "k7");
+                break;
               default:
                 ccprintf(os, microFormats[size],
                         reg_idx - int_reg::MicroBegin);
@@ -227,12 +263,12 @@ X86StaticInst::printReg(std::ostream &os, RegId reg, int size)
             return;
         }
         reg_idx -= NumMMXRegs;
-        if (reg_idx < NumXMMRegs * 2) {
-            ccprintf(os, "%%xmm%d_%s", reg_idx / 2,
-                    (reg_idx % 2) ? "high": "low");
+        if (reg_idx < NumXMMRegs * NumXMMSubRegs) {
+            ccprintf(os, "%%xmm%d_%d(%d)", reg_idx / NumXMMSubRegs,
+                     reg_idx % NumXMMSubRegs, size);
             return;
         }
-        reg_idx -= NumXMMRegs * 2;
+        reg_idx -= NumXMMRegs * NumXMMSubRegs;
         if (reg_idx < NumMicroFpRegs) {
             ccprintf(os, "%%ufp%d", reg_idx);
             return;

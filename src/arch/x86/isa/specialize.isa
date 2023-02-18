@@ -121,8 +121,12 @@ let {{
             if not self.size:
                 self.size = match.group("ssize")
 
-    ModRMRegIndex = "(MODRM_REG | (REX_R << 3))"
-    ModRMRMIndex = "(MODRM_RM | (REX_B << 3))"
+    # EVEX will extend ModRMReg with EVEX_R'.
+    ModRMRegIndex = \
+        "(MODRM_REG | (REX_R << 3) | ((EVEX_PRESENT ? EVEX_R_PRIME : 0) << 4))"
+    # EVEX will extend ModRMRM with REX_X.
+    ModRMRMIndex = \
+        "(MODRM_RM | (REX_B << 3) | ((EVEX_PRESENT ? REX_X : 0) << 4))"
     InstRegIndex = "(OPCODE_OP_BOTTOM3 | (REX_B << 3))"
 
     # This function specializes the given piece of code to use a particular
@@ -134,7 +138,8 @@ let {{
             opType = OpType(opTypes[0])
             opTypes.pop(0)
 
-            if opType.tag not in ("I", "J", "P", "PR", "Q", "V", "VR", "W"):
+            if opType.tag not in ("I", "J", "P", "PR", "Q", "V", "VR",
+                                  "W", "WY", "WZ"):
                 if opType.size:
                     env.setSize(opType.size)
 
@@ -204,7 +209,7 @@ let {{
                 env.addToDisassembly(
                         "printSegment(out, %s);\n" % ModRMRegIndex)
                 Name += "_S"
-            elif opType.tag in ("G", "P", "T", "V"):
+            elif opType.tag in ("G", "P", "T", "V", "VY", "VZ"):
                 # Use the "reg" field of the ModRM byte to select the register
                 env.addReg(ModRMRegIndex)
 
@@ -214,12 +219,21 @@ let {{
                 elif opType.tag == "V":
                     regFormat = 'ccprintf(out, "XMM%%d", %s);\n'
                     Name += "_XMM"
+                elif opType.tag == "VY":
+                    regFormat = 'ccprintf(out, "YMM%%d", %s);\n'
+                    Name += "_YMM"
+                elif opType.tag == "VZ":
+                    regFormat = 'ccprintf(out, "ZMM%%d", %s);\n'
+                    Name += "_ZMM"
                 else:
                     regFormat = \
                         "printReg(out, intRegClass[%s], regSize);\n"
                     Name += "_R"
                 env.addToDisassembly(regFormat % ModRMRegIndex)
-            elif opType.tag in ("E", "Q", "W"):
+            elif opType.tag in ("E", "Q", "W", "WY", "WZ", "WSSP"):
+                # ! GemForge
+                # We introduce WSSP, same as W but use env.setSize(opType.size)
+
                 # This might refer to memory or to a register. We need to
                 # divide it up farther.
                 regEnv = copy.copy(env)
@@ -233,9 +247,15 @@ let {{
                 if opType.tag == "Q":
                     regFormat = 'ccprintf(out, "MMX%%d", %s);\n'
                     regSuffix = "_MMX"
-                elif opType.tag == "W":
+                elif opType.tag == "W" or opType.tag == "WSSP":
                     regFormat = 'ccprintf(out, "XMM%%d", %s);\n'
                     regSuffix = "_XMM"
+                elif opType.tag == "WY":
+                    regFormat = 'ccprintf(out, "YMM%%d", %s);\n'
+                    regSuffix = "_YMM"
+                elif opType.tag == "WZ":
+                    regFormat = 'ccprintf(out, "ZMM%%d", %s);\n'
+                    regSuffix = "_ZMM"
                 else:
                     regFormat = \
                         "printReg(out, intRegClass[%s], regSize);\n"

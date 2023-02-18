@@ -39,32 +39,44 @@
         default: decode OPCODE_TYPE {
             'X86ISA::OneByteOpcode': decode OPCODE_OP_TOP5 {
                 0x00: decode OPCODE_OP_BOTTOM3 {
-                    default: MultiInst::ADD_LOCKED(OPCODE_OP_BOTTOM3,
-                                            [Mb,Gb], [Mv,Gv]);
+                    // The old implementation will reach to M5_UNREACHABLE
+                    // if this is not a valid instruction.
+                    // We manually break it out.
+                    // default: MultiInst::ADD_LOCKED(OPCODE_OP_BOTTOM3,
+                    //                         [Mb,Gb], [Mv,Gv]);
+                    0x0: ADD_LOCKED(Mb, Gb);
+                    0x1: ADD_LOCKED(Mv, Gv);
+                    default: UD2();
                 }
                 0x01: decode OPCODE_OP_BOTTOM3 {
-                    default: MultiInst::OR_LOCKED(OPCODE_OP_BOTTOM3,
-                                           [Mb,Gb], [Mv,Gv]);
+                    0x0: OR_LOCKED(Mb, Gb);
+                    0x1: OR_LOCKED(Mv, Gv);
+                    default: UD2();
                 }
                 0x02: decode OPCODE_OP_BOTTOM3 {
-                    default: MultiInst::ADC_LOCKED(OPCODE_OP_BOTTOM3,
-                                            [Mb,Gb], [Mv,Gv]);
+                    0x0: ADC_LOCKED(Mb, Gb);
+                    0x1: ADC_LOCKED(Mv, Gv);
+                    default: UD2();
                 }
                 0x03: decode OPCODE_OP_BOTTOM3 {
-                    default: MultiInst::SBB_LOCKED(OPCODE_OP_BOTTOM3,
-                                            [Mb,Gb], [Mv,Gv]);
+                    0x0: SBB_LOCKED(Mb, Gb);
+                    0x1: SBB_LOCKED(Mv, Gv);
+                    default: UD2();
                 }
                 0x04: decode OPCODE_OP_BOTTOM3 {
-                    default: MultiInst::AND_LOCKED(OPCODE_OP_BOTTOM3,
-                                            [Mb,Gb], [Mv,Gv]);
+                    0x0: AND_LOCKED(Mb, Gb);
+                    0x1: AND_LOCKED(Mv, Gv);
+                    default: UD2();
                 }
                 0x05: decode OPCODE_OP_BOTTOM3 {
-                    default: MultiInst::SUB_LOCKED(OPCODE_OP_BOTTOM3,
-                                            [Mb,Gb], [Mv,Gv]);
+                    0x0: SUB_LOCKED(Mb, Gb);
+                    0x1: SUB_LOCKED(Mv, Gv);
+                    default: UD2();
                 }
                 0x06: decode OPCODE_OP_BOTTOM3 {
-                    default: MultiInst::XOR_LOCKED(OPCODE_OP_BOTTOM3,
-                                            [Mb,Gb], [Mv,Gv]);
+                    0x0: XOR_LOCKED(Mb, Gb);
+                    0x1: XOR_LOCKED(Mv, Gv);
+                    default: UD2();
                 }
                 0x10: decode OPCODE_OP_BOTTOM3 {
                     0x0: decode MODRM_REG {

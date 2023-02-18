@@ -103,6 +103,8 @@ class MacroopBase : public X86StaticInst
     {
         return env;
     }
+
+    uint32_t getNumMicroops() const { return this->numMicroops; }
 };
 
 } // namespace X86ISA

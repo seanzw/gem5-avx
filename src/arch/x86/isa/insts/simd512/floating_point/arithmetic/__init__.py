@@ -1,0 +1,50 @@
+categories = [
+    "vaddss",
+    "vaddsd",
+    "vaddps",
+    "vmaxps",
+    "vmaxpd",
+    "vaddpd",
+    "vandps",
+    "vcmpps",
+    "vcmpss",
+    "vfmadd132ps",
+    "vfmadd132ss",
+    "vfmadd231ps",
+    "vfmadd213ps",
+    "vfmadd213ss",
+    "vfmadd231ss",
+    "vfnmadd132ps",
+    "vfnmadd213ps",
+    "vfnmadd213ss",
+    "vfnmadd231ps",
+    "vfnmadd231ss",
+    "vsubss",
+    "vsubsd",
+    "vsubps",
+    "vsubpd",
+    "vminsd",
+    "vminss",
+    "vminps",
+    "vminpd",
+    "vmaxss",
+    "vmulps",
+    "vmulpd",
+    "vmulss",
+    "vmulsd",
+    "vdivss",
+    "vdivsd",
+    "vdivps",
+    "vdivpd",
+    "vxorps",
+    "vxorpd",
+    "vpord",
+    "vpxor",
+]
+
+microcode = """
+# AVX512 instructions
+"""
+for category in categories:
+    exec("from . import {s} as cat".format(s=category))
+    microcode += cat.microcode
