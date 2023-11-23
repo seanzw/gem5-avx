@@ -366,6 +366,12 @@ let {{
             this->doPackedBinaryOp(xc, BinaryOp::SIntMin);
         '''
 
+    class Vminui(Varithp):
+        opClass = 'SimdCmpOp'
+        code = '''
+            this->doPackedBinaryOp(xc, BinaryOp::UIntMin);
+        '''
+
     class Vcmpeq(Varithp):
         opClass = 'SimdCmpOp'
         code = '''

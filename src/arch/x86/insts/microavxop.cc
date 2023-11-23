@@ -295,6 +295,16 @@ namespace gem5
                     dest.sc.i8 = saturate8(static_cast<int64_t>(src1.sc.i8) +
                                            static_cast<int64_t>(src2.sc.i8));
                     break;
+                case BinaryOp::UIntMin:
+                    dest.uc.i1 = std::min(src1.uc.i1, src2.uc.i1);
+                    dest.uc.i2 = std::min(src1.uc.i2, src2.uc.i2);
+                    dest.uc.i3 = std::min(src1.uc.i3, src2.uc.i3);
+                    dest.uc.i4 = std::min(src1.uc.i4, src2.uc.i4);
+                    dest.uc.i5 = std::min(src1.uc.i5, src2.uc.i5);
+                    dest.uc.i6 = std::min(src1.uc.i6, src2.uc.i6);
+                    dest.uc.i7 = std::min(src1.uc.i7, src2.uc.i7);
+                    dest.uc.i8 = std::min(src1.uc.i8, src2.uc.i8);
+                    break;
                 }
             }
             else

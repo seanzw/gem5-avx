@@ -397,6 +397,15 @@
                 }
             }
         }
+        0x1B: decode LEGACY_DECODEVAL {
+            // 0x66
+            0x1: decode OPCODE_OP_BOTTOM3 {
+                0x2: decode EVEX_L {
+                    0x1: VPMINUB(VYdo, WYdo);
+                    0x0: VPMINUB(Vo,Wo);
+                }
+            }
+        }
         0x1C: decode LEGACY_DECODEVAL {
             // 0xF3
             0x4: decode OPCODE_OP_BOTTOM3 {

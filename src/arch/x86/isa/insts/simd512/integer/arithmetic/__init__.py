@@ -12,6 +12,7 @@ categories = [
     "vpmovmskb",
     "vpsubd",
     "vpsubq",
+    "vpminub",
     "vpminsd",
     "vpminsq",
     "vpmuludq",
