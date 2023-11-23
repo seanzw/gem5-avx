@@ -194,8 +194,8 @@ namespace gem5
                             this->generateDisassembly(0x00, nullptr));
                     break;
                 case BinaryOp::IntCmpEq:
-                    dest.si.i1 = (src1.si.i1 == src2.si.i1) ? 0xFFFF : 0x0;
-                    dest.si.i2 = (src1.si.i2 == src2.si.i2) ? 0xFFFF : 0x0;
+                    dest.si.i1 = (src1.si.i1 == src2.si.i1) ? 0xFFFFFFFF : 0x0;
+                    dest.si.i2 = (src1.si.i2 == src2.si.i2) ? 0xFFFFFFFF : 0x0;
                     break;
                 case BinaryOp::IntMul:
                     // Multiplication will double the size.
@@ -266,6 +266,16 @@ namespace gem5
                     dest.sc.i6 = src1.sc.i6 + src2.sc.i6;
                     dest.sc.i7 = src1.sc.i7 + src2.sc.i7;
                     dest.sc.i8 = src1.sc.i8 + src2.sc.i8;
+                    break;
+                case BinaryOp::IntCmpEq:
+                    dest.sc.i1 = (src1.sc.i1 == src2.sc.i1) ? 0xFF : 0x0;
+                    dest.sc.i2 = (src1.sc.i2 == src2.sc.i2) ? 0xFF : 0x0;
+                    dest.sc.i3 = (src1.sc.i3 == src2.sc.i3) ? 0xFF : 0x0;
+                    dest.sc.i4 = (src1.sc.i4 == src2.sc.i4) ? 0xFF : 0x0;
+                    dest.sc.i5 = (src1.sc.i5 == src2.sc.i5) ? 0xFF : 0x0;
+                    dest.sc.i6 = (src1.sc.i6 == src2.sc.i6) ? 0xFF : 0x0;
+                    dest.sc.i7 = (src1.sc.i7 == src2.sc.i7) ? 0xFF : 0x0;
+                    dest.sc.i8 = (src1.sc.i8 == src2.sc.i8) ? 0xFF : 0x0;
                     break;
                 case BinaryOp::IntSatAdd:
                     dest.sc.i1 = saturate8(static_cast<int64_t>(src1.sc.i1) +

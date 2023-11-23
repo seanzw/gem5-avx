@@ -314,6 +314,10 @@
                         0x0: VPSLLD16(Wo, Ib);
                     }
                 }
+                0x4: decode EVEX_L {
+                    0x1: VPCMPEQB(VYdo,WYdo);
+                    0x0: VPCMPEQB(Vo,Wo);
+                }
                 0x6: decode EVEX_L {
                     0x1: VPCMPEQD(VYdo, WYdo);
                     0x0: VPCMPEQD(Vo, Wo);

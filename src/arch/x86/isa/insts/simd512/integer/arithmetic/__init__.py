@@ -8,6 +8,7 @@ categories = [
     "vpandd",
     "vpandq",
     "vpcmpeqd",
+    "vpcmpeqb",
     "vpsubd",
     "vpsubq",
     "vpminsd",
