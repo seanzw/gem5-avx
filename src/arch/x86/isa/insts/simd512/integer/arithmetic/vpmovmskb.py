@@ -1,4 +1,11 @@
 microcode = """
+
+def macroop VPMOVMSKB_R_XMM {
+    limm reg, 0
+    movsign reg, xmm0m, size=1, ext=0
+    movsign reg, xmm1m, size=1, ext=1
+};
+
 def macroop VPMOVMSKB_R_YMM {
     limm reg, 0
     movsign reg, xmm0m, size=1, ext=0

@@ -394,6 +394,7 @@
                 }
                 0x7: decode EVEX_L {
                     0x1: VPMOVMSKB(Gd, WYdo);
+                    0x0: VPMOVMSKB(Gd, VRo);
                 }
             }
         }
