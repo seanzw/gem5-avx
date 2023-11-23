@@ -556,6 +556,44 @@ let {{
             }
         '''
 
+    class Vmovmskb(AVXOp):
+        def __init__(self, dest, src, srcSize, destVL):
+            super(Vmovmskb, self).__init__(
+                dest=dest, src1=src, srcSize=srcSize, destVL=destVL
+            )
+        srcType = 'AVXOpBase::SrcType::Reg'
+        constructorCode = '''
+            this->addAVXDestRegs();
+            auto vRegs = destVL / sizeof(uint64_t);
+            _numSrcRegs = vRegs / 2;
+            for (int i = 0; i < vRegs / 2; ++i) {
+                srcRegIdxArr[i] = floatRegClass[src1 + i] ;
+            }
+        '''
+        code = '''
+            auto vDestRegs = destVL / sizeof(uint64_t);
+            if (srcSize == 1) {
+                // 1 byte. zero extension.
+                for (int i = 0; i < vDestRegs; i += 2) {
+                    FloatInt src, dst;
+                    src.ul = xc->getRegOperand(this, i / 2);
+                    dst.us.i1 = src.uc.i1;
+                    dst.us.i2 = src.uc.i2;
+                    dst.us.i3 = src.uc.i3;
+                    dst.us.i4 = src.uc.i4;
+                    xc->setRegOperand(this, i, dst.ul);
+
+                    dst.us.i1 = src.uc.i5;
+                    dst.us.i2 = src.uc.i6;
+                    dst.us.i3 = src.uc.i7;
+                    dst.us.i4 = src.uc.i8;
+                    xc->setRegOperand(this, i + 1, dst.ul);
+                }
+            } else {
+                panic("Invalid srcSize for movzx.");
+            }
+        '''
+
     class Vmovtr(AVXOp):
         def __init__(self, dest, src, srcSize, destVL):
             super(Vmovtr, self).__init__(
