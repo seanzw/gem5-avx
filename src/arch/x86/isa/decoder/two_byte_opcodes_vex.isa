@@ -406,6 +406,10 @@
         0x1D: decode LEGACY_DECODEVAL {
             // 0x66
             0x1: decode OPCODE_OP_BOTTOM3 {
+                0x3: decode EVEX_L {
+                    0x1: VPORD(VYdo, WYdo);
+                    0x0: VPORD(Vo, Wo);
+                }
                 0x4: decode EVEX_L {
                     0x1: VPADDSB(VYdo, WYdo);
                     0x0: VPADDSB(Vo, Wo);
