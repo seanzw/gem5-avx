@@ -97,6 +97,11 @@
                         0x0: VFNMADD231SS(Vo, Wq);
                     }
                 }
+                0xF7: decode EVEX_L {
+                    0x0: decode REX_W {
+                        0x1: SHLXQ(Ev, Gv);
+                    }
+                }
             }
         }
     }

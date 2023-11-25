@@ -129,6 +129,7 @@ let {{
         "xmm5m" : fpRegIdx("float_reg::xmmIdx(env.regm, 5)"),
         "xmm6m" : fpRegIdx("float_reg::xmmIdx(env.regm, 6)"),
         "xmm7m" : fpRegIdx("float_reg::xmmIdx(env.regm, 7)"),
+        "regv": gpRegIdx("machInst.evex.v_extend"),
         "xmm0v" : fpRegIdx("float_reg::xmmIdx(machInst.evex.v_extend, 0)"),
         "xmm1v" : fpRegIdx("float_reg::xmmIdx(machInst.evex.v_extend, 1)"),
         "xmm2v" : fpRegIdx("float_reg::xmmIdx(machInst.evex.v_extend, 2)"),

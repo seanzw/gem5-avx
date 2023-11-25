@@ -1035,6 +1035,25 @@ let {{
             }
         '''
 
+    class Shlx(BasicRegOp):
+        shlxCode = '''
+            uint8_t shiftAmt = (op2 & ((dataSize == 8) ? mask(6) : mask(5)));
+            uint8_t dataBits = dataSize * 8;
+            uint8_t realShiftAmt = shiftAmt %% (2 * dataBits);
+            uint64_t result;
+            if (realShiftAmt == 0) {
+                result = PSrcReg1;
+            } else if (realShiftAmt < dataBits) {
+                result = PSrcReg1 << realShiftAmt;
+            } else {
+                // Shift outside.
+                result = 0;
+            }
+            %s
+            '''
+        code = shlxCode % "DestReg = merge(DestReg, dest, result, dataSize);"
+        big_code = shlxCode % "DestReg = result & mask(dataSize * 8);"
+
     class Sld(BasicRegOp):
         sldCode = '''
             uint8_t shiftAmt = (op2 & ((dataSize == 8) ? mask(6) : mask(5)));
