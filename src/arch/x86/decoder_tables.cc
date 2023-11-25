@@ -171,7 +171,7 @@ namespace X86ISA
     const Decoder::ByteTable Decoder::UsesModRMThreeByte0F3A =
     {    //LSB
 // MSB   0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F
-/*  0 */ 0 , 0 , 0 , 1 , 1 , 1 , 0 , 0 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1,
+/*  0 */ 0 , 0 , 0 , 1 , 1 , 1 , 1 , 0 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1,
 /*  1 */ 0 , 0 , 0 , 0 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 1 , 0 , 0 , 0 , 0,
 /*  2 */ 1 , 1 , 1 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0,
 /*  3 */ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1 , 1 , 1 , 1 , 0 , 0 , 0 , 0,
@@ -291,7 +291,7 @@ namespace X86ISA
     const Decoder::ByteTable Decoder::ImmediateTypeThreeByte0F3A =
     {    //LSB
 // MSB   0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F
-/*  0 */ 0 , 0 , 0 , BY, BY, BY, 0 , 0 , BY, BY, BY, BY, BY, BY, BY, BY,
+/*  0 */ 0 , 0 , 0 , BY, BY, BY, BY, 0 , BY, BY, BY, BY, BY, BY, BY, BY,
 /*  1 */ 0 , 0 , 0 , 0 , BY, BY, BY, BY, BY, BY, BY, BY, 0 , 0 , 0 , 0 ,
 /*  2 */ BY, BY, BY, 0 , 0 , BY, 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,
 /*  3 */ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , BY, BY, BY, BY, 0 , 0 , 0 , 0 ,

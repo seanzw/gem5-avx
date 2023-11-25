@@ -43,6 +43,9 @@
                     0x1: VPERMILPD(VYdo, WYdo, Ib);
                     0x0: VPERMILPD(Vo, Wo, Ib);
                 }
+                0x06: decode EVEX_L {
+                    0x1: VPERM2F128(VYdo, WYdo, Ib);
+                }
                 0x0C: decode EVEX_L {
                     0x1: VBLENDPS(VYdo, WYdo, Ib);
                     0x0: VBLENDPS(Vo, Wo, Ib);

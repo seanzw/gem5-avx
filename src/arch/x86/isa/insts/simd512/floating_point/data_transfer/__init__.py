@@ -72,6 +72,7 @@ categories = [
     "vextractps",
     "vpermilps",
     "vpermilpd",
+    "vperm2f128",
     "vpinsr",
     "vpternlog",
     "vpshufd",
