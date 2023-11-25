@@ -612,6 +612,80 @@ namespace gem5
             }
         }
 
+        void AVXOpBase::doUnpackOp(ExecContext *xc, BinaryOp op) const
+        {
+            auto vRegs = destVL / sizeof(uint64_t);
+            switch (op)
+            {
+            default:
+                panic("Unsupported unpack op %d size %d VL %d.",
+                    op, this->srcSize, this->destVL);
+            case BinaryOp::UnpackInterleaveLow:
+            case BinaryOp::UnpackInterleaveHigh:
+            {
+                // Interleave at 4B.
+                if (this->srcSize == 4 || this->srcSize == 8)
+                {
+                    FloatInt dests[vRegs];
+                    for (int i = 0; i < vRegs; ++i)
+                    {
+                        FloatInt src1;
+                        FloatInt src2;
+                        int offset = i % 2;
+                        // Pick the srcIdx.
+                        // If unpack high, we need to add one here.
+                        int srcIdx = i - offset;
+                        if (op == BinaryOp::UnpackInterleaveHigh)
+                        {
+                            srcIdx += 1;
+                        }
+                        src1.ul =
+                            xc->getRegOperand(this, (srcIdx + 0) * 2 + 0);
+                        src2.ul =
+                            xc->getRegOperand(this, (srcIdx + 1) * 2 + 0);
+
+                        switch (this->srcSize)
+                        {
+                            case 4: 
+                                if (offset == 0)
+                                {
+                                    dests[i].ui.i1 = src1.ui.i1;
+                                    dests[i].ui.i2 = src2.ui.i1;
+                                }
+                                else
+                                {
+                                    dests[i].ui.i1 = src1.ui.i2;
+                                    dests[i].ui.i2 = src2.ui.i2;
+                                }
+                                break;
+                            case 8: 
+                                if (offset == 0)
+                                {
+                                    dests[i].ul = src1.ul;
+                                }
+                                else
+                                {
+                                    dests[i].ul = src2.ul;
+                                }
+                                break;
+                            default:
+                                panic("unimplemented unpck");
+                                break;
+                        }
+                    }
+                    for (int i = 0; i < vRegs; ++i)
+                    {
+                        xc->setRegOperand(this, i, dests[i].ul);
+                    }
+                    return;
+                }
+                break;
+            }
+            }
+            panic("Unsupported unpack op %d size %d VL %d.",
+                op, this->srcSize, this->destVL);
+        }
+
         void AVXOpBase::doExtract(ExecContext *xc) const
         {
             FloatInt result;

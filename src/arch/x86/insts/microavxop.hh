@@ -152,6 +152,8 @@ protected:
     UIntMulLow,
     SIntMin,
     SIntToUIntPack,
+    UnpackInterleaveLow,
+    UnpackInterleaveHigh,
   };
 
   FloatInt calcPackedBinaryOp(FloatInt src1, FloatInt src2, BinaryOp op) const;
@@ -165,6 +167,8 @@ protected:
     BinaryOp op1, BinaryOp op2) const;
   // A helper function to perform pack operation
   void doPackOp(ExecContext *xc, BinaryOp op) const;
+  // A helper function to perform unpack operation
+  void doUnpackOp(ExecContext *xc, BinaryOp op) const;
   // A helper function to perform extract operation
   void doExtract(ExecContext *xc) const;
   // A helper function to perform insert operation

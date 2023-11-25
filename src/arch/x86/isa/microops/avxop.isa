@@ -383,6 +383,16 @@ let {{
             this->doPackOp(xc, BinaryOp::SIntToUIntPack);
         '''
 
+    class Vunpackl(Varithp):
+        code = '''
+            this->doUnpackOp(xc, BinaryOp::UnpackInterleaveLow);
+        '''
+
+    class Vunpackh(Varithp):
+        code = '''
+            this->doUnpackOp(xc, BinaryOp::UnpackInterleaveHigh);
+        '''
+
     class Vfused(AVXOp):
         # Used in packed arithmetic ops with three operands, e.g. vfmaddps
         # dest = (src1 op1 src2) op2 src3
