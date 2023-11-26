@@ -506,6 +506,13 @@ let {{
         '''
         big_code = 'DestReg = result = (PSrcReg1 & op2) & mask(dataSize * 8)'
 
+    class Andn(LogicRegOp):
+        code = '''
+            result = (~PSrcReg1) & op2;
+            DestReg = merge(DestReg, dest, result, dataSize)
+        '''
+        big_code = 'DestReg = result = ((~PSrcReg1) & op2) & mask(dataSize * 8)'
+
     class Sub(SubRegOp):
         code = '''
             result = PSrcReg1 - op2;

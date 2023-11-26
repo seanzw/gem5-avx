@@ -19,10 +19,11 @@
                     0x1: VUNPCKHPS(VYdo, WYdo);
                     0x0: VUNPCKHPS(Vo, Wo);
                 }
-                0x6: decode MODRM_MOD {
-                    0x3: decode EVEX_L {
-                        0x0: VMOVLHPS(Vo,VRq);
-                    }
+                0x6: decode EVEX_L {
+                    // Two versions merged into VMOVLHPS
+                    // vmovlhps with src2 from reg
+                    // vmovhps  with src2 from mem
+                    0x0: VMOVLHPS(Vo,Wo);
                 }
             }
             // 0x66, packed double

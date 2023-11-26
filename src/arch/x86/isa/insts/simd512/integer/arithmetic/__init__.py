@@ -1,4 +1,5 @@
 categories = [
+    "andnq",
     "shlx",
     "vpaddd",
     "vpaddq",

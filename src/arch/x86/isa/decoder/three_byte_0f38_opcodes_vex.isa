@@ -104,5 +104,14 @@
                 }
             }
         }
+        0: decode LEGACY_DECODEVAL {
+            0x0: decode OPCODE_OP {
+                0xF2: decode EVEX_L {
+                    0x0: decode REX_W {
+                        0x1: ANDNQ(Gq, Eq);
+                    }
+                }
+            }
+        }
     }
 }
