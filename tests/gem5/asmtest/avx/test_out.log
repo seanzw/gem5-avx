@@ -1,0 +1,31 @@
+Global frequency set at 1000000000000 ticks per second
+build/X86/mem/dram_interface.cc:690: warn: DRAM device capacity (8192 Mbytes) does not match the address range assigned (512 Mbytes)
+build/X86/base/statistics.hh:285: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+build/X86/base/statistics.hh:285: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+build/X86/sim/stream_nuca/stream_nuca_manager.cc:91: hack: Register 0x56187f0547e0 processor 0x56187ed0b1e0 name system.cpu.workload.
+0: system.remote_gdb: listening for remote gdb on port 7000
+build/X86/base/statistics.hh:285: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+build/X86/base/statistics.hh:285: warn: One of the stats is a legacy stat. Legacy stat is a stat that does not belong to any statistics::Group. Legacy stat is deprecated.
+gem5 Simulator System.  https://www.gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 22.1.0.0
+gem5 compiled Nov 26 2023 02:52:16
+gem5 started Nov 26 2023 02:52:39
+gem5 executing on octacos, pid 73555
+command line: ../../../../build/X86/gem5.fast ../../../../configs/example/se.py --cmd=avxtests.exe
+
+IntlvLow 6 IntlvBits 0 0 536870912 XORHighBit 19
+**** REAL SIMULATION ****
+warn: The `get_runtime_isa` function is deprecated. Please migrate away from using this function.
+warn: The `get_runtime_isa` function is deprecated. Please migrate away from using this function.
+warn: No dot file generated. Please install pydot to generate the dot file and pdf.
+build/X86/sim/simulate.cc:192: info: Entering event queue @ 0.  Starting simulation...
+build/X86/arch/x86/linux/syscalls.cc:121: warn: arch_prctl: unsupport code 0x3001 addr 0x7fffffffed90
+build/X86/sim/mem_state.cc:443: info: Increasing stack size by one page.
+build/X86/sim/syscall_emul.cc:88: warn: ignoring syscall mprotect(...)
+      (further warnings will be suppressed)
+>> AVX Passed
+Warn: McPATManager is not maintained. Do not dump.
+Exiting @ tick 206145000 because exiting with last active thread context
+dump mcpat in python called

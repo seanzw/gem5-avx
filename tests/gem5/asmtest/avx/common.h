@@ -35,7 +35,10 @@ union vreg
     int64_t pi64[zmmi_pi64_cnt];
 };
 
-// #define PRINTF(...) printf(__VA_ARGS__)
+#ifdef VERBOSE
+#define PRINTF(...) printf(__VA_ARGS__)
+#else
 #define PRINTF(...)
+#endif
 
 #endif

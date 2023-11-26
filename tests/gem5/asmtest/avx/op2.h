@@ -3,13 +3,12 @@
 
 #include "common.h"
 
-#define TEST_OP2_IMPL(INST, INTRIN, REG, ELEM, TYPE, FORMAT)                  \
-    __attribute__((noinline)) int INST##_##REG(union vreg a, union vreg b,    \
-                                               union vreg c)                  \
+#define CHECK_REG(INST, INTRIN, REG, ELEM, TYPE, FORMAT)                      \
+    __attribute__((noinline)) int INST##_check_##REG(union vreg r,            \
+                                                     union vreg c)            \
     {                                                                         \
-        union vreg r;                                                         \
-        r.REG = INTRIN(a.REG, b.REG);                                         \
-                                                                              \
+        int failed = 0;                                                       \
+        _Pragma("clang loop unroll(disable) vectorize(disable)")              \
         for (int i = 0; i < REG##_##ELEM##_cnt; ++i)                          \
         {                                                                     \
             TYPE expected = c.ELEM[i];                                        \
@@ -17,10 +16,26 @@
             PRINTF("Get %d " #FORMAT " " #FORMAT ".\n", i, expected, actual); \
             if (expected != actual)                                           \
             {                                                                 \
-                printf(">> AVX Failed " #INST "_" #REG "\n");                 \
-                exit(1);                                                      \
+                failed = 1;                                                   \
             }                                                                 \
         }                                                                     \
+        if (failed)                                                           \
+        {                                                                     \
+            printf(">> AVX Failed " #INST "_" #REG "\n");                     \
+            exit(1);                                                          \
+        }                                                                     \
+        return 0;                                                             \
+    }
+
+#define TEST_OP2_IMPL(INST, INTRIN, REG, ELEM, TYPE, FORMAT)                  \
+    CHECK_REG(INST, INTRIN, REG, ELEM, TYPE, FORMAT)                          \
+    __attribute__((noinline)) int INST##_##REG(union vreg a, union vreg b,    \
+                                               union vreg c)                  \
+    {                                                                         \
+        union vreg r;                                                         \
+        r.REG = INTRIN(a.REG, b.REG);                                         \
+                                                                              \
+        INST##_check_##REG(r, c);                                             \
         return 0;                                                             \
     }
 
@@ -39,6 +54,7 @@ TEST_PS_OP2(vminps, min_ps)
 TEST_PS_OP2(vmaxps, max_ps)
 TEST_PS_OP2(vxorps, xor_ps)
 TEST_PS_OP2(vandps, and_ps)
+TEST_PS_OP2(vunpcklps, unpacklo_ps)
 
 #define TEST_PD_OP2_IMPL(INST, INTRIN, REG)                                   \
     TEST_OP2_IMPL(INST, INTRIN, REG, pd, double, "%lf")
@@ -191,6 +207,22 @@ void avx_test_op2()
     vandps_zmm(a, b, c);
     vandps_ymm(a, b, c);
     vpandd_zmmi(a, b, c);
+
+    for (int i = 0; i < zmm_ps_cnt; ++i)
+    {
+        a.ps[i] = i;
+        b.ps[i] = i + 20;
+        
+        int offset = i % 4;
+        switch (offset)
+        {
+            case 0: c.ps[i] = a.ps[i-0]; break;
+            case 1: c.ps[i] = b.ps[i-1]; break;
+            case 2: c.ps[i] = a.ps[i-1]; break;
+            case 3: c.ps[i] = b.ps[i-2]; break;
+        }
+    }
+    vunpcklps_ymm(a, b, c);
 
     for (int i = 0; i < zmmi_pi8_cnt; ++i)
     {
