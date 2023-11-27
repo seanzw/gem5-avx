@@ -20,8 +20,39 @@ __attribute__((noinline)) int avx_test_andnq() {
   return 0;
 }
 
+__attribute__((noinline)) int avx_test_vpcmpgtq_impl(union vreg a, union vreg b,
+                                                int64_t expected) {
+
+  __mmask8 result = _mm512_cmpgt_epi64_mask(a.zmmi, b.zmmi);
+
+  if (result != expected) {
+    printf(">> AVX Failed vpcmpgtq: %#hhx expect %#lx\n", result, expected);
+    exit(1);
+  }
+
+  return 0;
+}
+
+__attribute__((noinline)) int avx_test_vpcmpgtq() {
+
+  union vreg a, b;
+
+  int64_t expected = 0;
+
+  for (int i = 0; i < zmmi_pi64_cnt; ++i) {
+    a.pi64[i] = i;
+    b.pi64[i] = zmmi_pi64_cnt - i;
+    expected |= (a.pi64[i] > b.pi64[i]) << i;
+  }
+
+  avx_test_vpcmpgtq_impl(a, b, expected);
+
+  return 0;
+}
+
 void avx_test_inline_asm() {
   avx_test_andnq();
+  avx_test_vpcmpgtq();
 }
 
 #endif
