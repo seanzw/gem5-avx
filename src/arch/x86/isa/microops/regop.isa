@@ -716,7 +716,19 @@ let {{
     class Kmov(BasicRegOp):
         code = '''
             if (dataSize == 1) DestReg = SrcReg1 & 0xFF;
-            else panic("Unsupported kmov size %%d", dataSize);
+            else if (dataSize == 2) DestReg = SrcReg1 & 0xFFFF;
+            else if (dataSize == 4) DestReg = SrcReg1 & 0xFFFFFFFF;
+            else if (dataSize == 8) DestReg = SrcReg1;
+            else panic("Unsupported kmov size %d\\n", dataSize);
+        '''
+        op_class = "No_OpClass"
+
+    class Kunpck(BasicRegOp):
+        code = '''
+            if (dataSize == 1) {
+                DestReg = ((SrcReg1 & 0xFF) << 8) | (SrcReg2 & 0xFF);
+            }
+            else panic("Unsupported kunpck size %d\\n", dataSize);
         '''
         op_class = "No_OpClass"
 

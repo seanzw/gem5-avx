@@ -156,6 +156,8 @@ X86StaticInst::printReg(std::ostream &os, RegId reg, int size)
         {"", "r%sb", "r%sw", "", "r%sd", "", "", "", "r%s"};
     static const char * microFormats[9] =
         {"", "t%db", "t%dw", "", "t%dd", "", "", "", "t%d"};
+    static const char * maskFormats[9] =
+        {"", "k%db", "k%dw", "", "k%dd", "", "", "", "k%d"};
 
     RegIndex reg_idx = reg.index();
 
@@ -227,28 +229,14 @@ X86StaticInst::printReg(std::ostream &os, RegId reg, int size)
                 ccprintf(os, longFormats[size], "15");
                 break;
               case int_reg::K0:
-                ccprintf(os, longFormats[size], "k0");
-                break;
               case int_reg::K1:
-                ccprintf(os, longFormats[size], "k1");
-                break;
               case int_reg::K2:
-                ccprintf(os, longFormats[size], "k2");
-                break;
               case int_reg::K3:
-                ccprintf(os, longFormats[size], "k3");
-                break;
               case int_reg::K4:
-                ccprintf(os, longFormats[size], "k4");
-                break;
               case int_reg::K5:
-                ccprintf(os, longFormats[size], "k5");
-                break;
               case int_reg::K6:
-                ccprintf(os, longFormats[size], "k6");
-                break;
               case int_reg::K7:
-                ccprintf(os, longFormats[size], "k7");
+                ccprintf(os, maskFormats[size], reg_idx - int_reg::K0);
                 break;
               default:
                 ccprintf(os, microFormats[size],

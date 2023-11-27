@@ -142,6 +142,7 @@ let {{
         "mmxm" : fpRegIdx("float_reg::mmx(env.regm)"),
         "maskk"  : gpRegIdx("MASKREG_K(env.reg)"),
         "maskkm" : gpRegIdx("MASKREG_K(env.regm)"),
+        "maskkv" : gpRegIdx("MASKREG_K(machInst.evex.v_extend)"),
         "maskka" : gpRegIdx("MASKREG_K(machInst.evex.a)"),
         "imm" : "adjustedImm",
         "disp" : "adjustedDisp",

@@ -37,6 +37,7 @@
 
 categories = [
     "kmov",
+    "kunpck",
     "valign",
     "vcomiss",
     "vpbroadcast",

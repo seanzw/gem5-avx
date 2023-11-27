@@ -27,6 +27,10 @@ union vreg
     __m256 ymm;
     __m256d ymmd;
     __m256i ymmi;
+    __mmask8 mask8;
+    __mmask16 mask16;
+    __mmask32 mask32;
+    __mmask64 mask64;
     float ps[zmm_ps_cnt];
     double pd[zmmd_pd_cnt];
     int8_t pi8[zmmi_pi8_cnt];

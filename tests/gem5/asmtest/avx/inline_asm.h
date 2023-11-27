@@ -21,7 +21,7 @@ __attribute__((noinline)) int avx_test_andnq() {
 }
 
 __attribute__((noinline)) int avx_test_vpcmpgtq_impl(union vreg a, union vreg b,
-                                                int64_t expected) {
+                                                     int64_t expected) {
 
   __mmask8 result = _mm512_cmpgt_epi64_mask(a.zmmi, b.zmmi);
 
@@ -50,9 +50,37 @@ __attribute__((noinline)) int avx_test_vpcmpgtq() {
   return 0;
 }
 
+__attribute__((noinline)) int avx_test_kunpckbw_impl(union vreg a, union vreg b,
+                                                     union vreg expected) {
+
+  __mmask16 result = _mm512_kunpackb(a.mask16, b.mask16);
+
+  if (result != expected.mask16) {
+    printf(">> AVX Failed kunpckbw: %#hx expect %#hx\n", result,
+           expected.mask16);
+    exit(1);
+  }
+
+  return 0;
+}
+
+__attribute__((noinline)) int avx_test_kunpckbw() {
+
+  union vreg a, b, expected;
+
+  a.mask16 = 0xAB;
+  b.mask16 = 0xCD;
+  expected.mask16 = 0xABCD;
+
+  avx_test_kunpckbw_impl(a, b, expected);
+
+  return 0;
+}
+
 void avx_test_inline_asm() {
   avx_test_andnq();
   avx_test_vpcmpgtq();
+  avx_test_kunpckbw();
 }
 
 #endif
