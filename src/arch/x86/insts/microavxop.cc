@@ -905,6 +905,43 @@ namespace gem5
             xc->setRegOperand(this, 0, result);
         }
 
+        void AVXOpBase::doIntCompareToMask(ExecContext *xc, BinaryOp op) const
+        {
+            uint64_t result = 0;
+            auto vSrcRegs = srcVL / sizeof(uint64_t);
+            FloatInt src1;
+            FloatInt src2;
+
+            auto compareInt64 = [this, op](int64_t a, int64_t b) -> int
+            {
+                switch (op)
+                {
+                default:
+                    panic("%s: Unknown IntCmp Op %d.",
+                          this->disassemble(0x0), op);
+                case AVXOpBase::BinaryOp::IntCmpGt:
+                    return a > b;
+                }
+            };
+
+            for (int i = 0; i < vSrcRegs; ++i)
+            {
+                src1.ul = xc->getRegOperand(this, i * 2);
+                src2.ul = xc->getRegOperand(this, i * 2 + 1);
+                if (this->srcSize == 8)
+                {
+                    int c = compareInt64(src1.sl, src2.sl);
+                    result |= (c << i);
+                } else {
+                    panic("%s: Unsupported IntCmp Size %d",
+                          this->disassemble(0x0), this->srcSize);
+                }
+            }
+
+            assert(destVL == 8 && "Invalid DestVL for IntCmpMask.");
+            xc->setRegOperand(this, 0, result);
+        }
+
         void AVXOpBase::doMov(ExecContext *xc) const
         {
 

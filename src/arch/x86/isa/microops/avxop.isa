@@ -844,16 +844,17 @@ let {{
             }
         '''
 
-    class Vcmpf(AVXOp):
-        # Compare two floating point vectors.
-        def __init__(self, dest, src1, src2, imm8, VL, size):
-            super(Vcmpf, self).__init__(
+    class Vcmpmask(AVXOp):
+        # Compare two vectors and write to mask
+        abstract = True
+        def __init__(self, dest, src1, src2, VL, size, imm8=0):
+            super(Vcmpmask, self).__init__(
                 # ! Change from GpRegIndex to FpRegIndex
                 dest="FpRegIndex((%s).index)" % dest,
                 src1=src1, src2=src2, imm8=imm8,
+                # DestVL is only 8 byte for the mask reg.
                 srcVL=VL, destVL=8, srcSize=size, destSize=8,
             )
-        srcType = 'AVXOpBase::SrcType::RegRegImm'
         constructorCode = '''
 
             auto vDestRegs = destVL / sizeof(uint64_t);
@@ -875,6 +876,24 @@ let {{
         # Compare according to the immediate.
         code = '''
             this->doFloatCompare(xc);
+        '''
+
+    class Vcmpf(Vcmpmask):
+        # Compare two floating point vectors and write to mask
+        srcType = 'AVXOpBase::SrcType::RegRegImm'
+
+        # Compare according to the immediate.
+        code = '''
+            this->doFloatCompare(xc);
+        '''
+
+    class Vcmpgtmask(Vcmpmask):
+        # Compare two int vectors and write to mask
+        srcType = 'AVXOpBase::SrcType::RegReg'
+        
+        # Compare according to the immediate.
+        code = '''
+            this->doIntCompareToMask(xc, BinaryOp::IntCmpGt);
         '''
 
     class Scmpf(AVXOp):

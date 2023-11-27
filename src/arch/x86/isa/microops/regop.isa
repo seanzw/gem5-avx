@@ -712,6 +712,14 @@ let {{
         else_code = 'DestReg = DestReg;'
         op_class = "No_OpClass"
 
+    # Kmov need to do zero extension.
+    class Kmov(BasicRegOp):
+        code = '''
+            if (dataSize == 1) DestReg = SrcReg1 & 0xFF;
+            else panic("Unsupported kmov size %%d", dataSize);
+        '''
+        op_class = "No_OpClass"
+
     # Shift instructions
 
     class Sll(BasicRegOp):

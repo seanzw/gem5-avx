@@ -354,10 +354,16 @@
                 }
             }
         }
-        0x12: decode OPCODE_OP_BOTTOM3 {
-            0x2: decode MODRM_MOD {
-                // KMOVW is not implemented yet.
-                0x3: HINT_NOP();
+        0x12: decode LEGACY_DECODEVAL {
+            // 0x66
+            0x1: decode OPCODE_OP_BOTTOM3 {
+                0x3: decode EVEX_L {
+                    0x0: decode REX_W {
+                        0x0: decode MODRM_MOD {
+                            0x3: KMOVB(Gv, Gv);
+                        }
+                    }
+                }
             }
         }
         0x15: decode OPCODE_OP_BOTTOM3 {

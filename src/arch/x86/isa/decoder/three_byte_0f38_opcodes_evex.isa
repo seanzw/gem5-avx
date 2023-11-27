@@ -58,6 +58,11 @@
                         0x0: VPACKUSDW(Vo, Wo);
                     }
                 }
+                0x37: decode REX_W {
+                    0x1: decode EVEX_L_EXTEND {
+                        0x2: VPCMPGTQ(VZqo, WZqo);
+                    }
+                }
                 0x39: decode REX_W {
                     0x1: decode EVEX_L_EXTEND {
                         0x2: VPMINSQ(VZqo, WZqo);

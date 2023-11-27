@@ -36,6 +36,7 @@
 # Authors: Gabe Black
 
 categories = [
+    "kmov",
     "valign",
     "vcomiss",
     "vpbroadcast",
