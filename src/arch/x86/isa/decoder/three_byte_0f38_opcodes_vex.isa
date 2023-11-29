@@ -99,7 +99,7 @@
                 }
                 0xF7: decode EVEX_L {
                     0x0: decode REX_W {
-                        0x1: SHLXQ(Ev, Gv);
+                        0x1: SHLXQ(Gv, Ev);
                     }
                 }
             }

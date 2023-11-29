@@ -20,6 +20,23 @@ __attribute__((noinline)) int avx_test_andnq() {
   return 0;
 }
 
+__attribute__((noinline)) int avx_test_shlxq() {
+
+  uint64_t a = 0x1;
+  uint64_t b = 0x5;
+  uint64_t c = 0;
+  uint64_t c_expected = 32;
+
+  __asm__("shlxq %1, %2, %0\n\t" : "=r"(c) : "r"(b), "r"(a) :);
+
+  if (c != c_expected) {
+    printf(">> AVX Failed shlxq: %#lx expect %#lx\n", c, c_expected);
+    exit(1);
+  }
+
+  return 0;
+}
+
 __attribute__((noinline)) int avx_test_vpcmpgtq_impl(union vreg a, union vreg b,
                                                      int64_t expected) {
 
@@ -79,6 +96,7 @@ __attribute__((noinline)) int avx_test_kunpckbw() {
 
 void avx_test_inline_asm() {
   avx_test_andnq();
+  avx_test_shlxq();
   avx_test_vpcmpgtq();
   avx_test_kunpckbw();
 }
