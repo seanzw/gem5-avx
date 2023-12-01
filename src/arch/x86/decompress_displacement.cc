@@ -230,9 +230,9 @@ const EVEXTupleType EVEXTupleTypeThreeByte660F38[256] =
     {    //LSB
 // MSB   O | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F
 /*  O */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
-/*  1 */ O , O , O , O , O , O , O , O , TS, TS, O , O , O , O , O , O ,
+/*  1 */ O , O , O , O , O , O , FU, O , TS, TS, O , O , O , O , O , O ,
 /*  2 */ O , O , O , O , O , O , O , O , FU, O , O , FU, O , O , O , O ,
-/*  3 */ O , O , O , O , O , O , O , FU, O , FU, O , O , O , O , O , O ,
+/*  3 */ O , O , O , O , O , O , FU, FU, O , FU, O , O , O , O , O , O ,
 /*  4 */ FU, O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
 /*  5 */ O , O , O , O , O , O , O , O , TS, O , O , O , O , O , O , O ,
 /*  6 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,

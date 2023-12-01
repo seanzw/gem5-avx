@@ -393,6 +393,12 @@ let {{
             this->doUnpackOp(xc, BinaryOp::UnpackInterleaveHigh);
         '''
 
+    class Vperm(Varithp):
+        opClass = 'SimdMiscOp'
+        code = '''
+            this->doPermOp(xc);
+        '''
+
     class Vfused(AVXOp):
         # Used in packed arithmetic ops with three operands, e.g. vfmaddps
         # dest = (src1 op1 src2) op2 src3

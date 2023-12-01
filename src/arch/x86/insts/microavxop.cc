@@ -1068,6 +1068,55 @@ namespace gem5
             }
         }
 
+        void AVXOpBase::doPermOp(ExecContext *xc) const
+        {
+
+            auto vSrcRegs = srcVL / sizeof(uint64_t);
+
+            // Read all the src reg.
+            FloatInt srcValue[vSrcRegs];
+            for (int i = 0; i < vSrcRegs; i++)
+            {
+                // Read in the four 32-bit value.
+                srcValue[i].ul = xc->getRegOperand(this, i * 2 + 1);
+            }
+
+            int indexMask = vSrcRegs - 1;
+            if (this->srcSize == 4) {
+                // We need one more bit to index int32.
+                indexMask = (indexMask << 1) | 0x1;
+            } else {
+                assert(false && "Only support permd.");
+            }
+
+            auto select16 = [&](int index) -> uint32_t
+            {
+                auto maskedIndex = index & indexMask;
+                auto reg = maskedIndex >> 1;
+                auto offset = maskedIndex & 1;
+                return srcValue[reg].ui_array[offset];
+            };
+
+            assert(this->mask == int_reg::_K0Idx &&
+                   "Mask in vpermd is not implemented yet.");
+
+
+            // Select the reg.
+            FloatInt srcIndex;
+            FloatInt dest;
+            for (int i = 0; i < vSrcRegs; i++)
+            {
+                // Read in the four 32-bit value.
+                srcIndex.ul = xc->getRegOperand(this, i * 2 + 0);
+
+                // Permute the value.
+                dest.ui.i1 = select16(srcIndex.ui.i1);
+                dest.ui.i2 = select16(srcIndex.ui.i2);
+
+                xc->setRegOperand(this, i + 0, dest.ul);
+            }
+        }
+
     } // namespace X86ISA
 
 } // namespace gem5

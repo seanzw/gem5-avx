@@ -35,6 +35,11 @@
         1: decode LEGACY_DECODEVAL {
             // 0x66
             0x1: decode OPCODE_OP {
+                0x16: decode REX_W {
+                    0x0: decode EVEX_L_EXTEND {
+                        0x2: VPERMPS(VZqo, WZqo);
+                    }
+                }
                 0x18: decode EVEX_L_EXTEND {
                     0x2: VBROADCASTSS(VZqo, Wq);
                 }
@@ -56,6 +61,11 @@
                         0x2: VPACKUSDW(VZqo, WZqo);
                         0x1: VPACKUSDW(VYdo, WYdo);
                         0x0: VPACKUSDW(Vo, Wo);
+                    }
+                }
+                0x36: decode REX_W {
+                    0x0: decode EVEX_L_EXTEND {
+                        0x2: VPERMD(VZqo, WZqo);
                     }
                 }
                 0x37: decode REX_W {

@@ -35,6 +35,11 @@
         1: decode LEGACY_DECODEVAL {
             // 0x66
             0x1: decode OPCODE_OP {
+                0x16: decode REX_W {
+                    0x0: decode EVEX_L{
+                        0x1: VPERMPS(VYdo, WYdo);
+                    }
+                }
                 0x18: decode EVEX_L {
                     0x1: VBROADCASTSS(VYdo, Wq);
                     0x0: VBROADCASTSS(Vo, Wq);

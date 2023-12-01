@@ -104,6 +104,7 @@ TEST_PI32_OP2_IMPL(vpandd, _mm512_and_epi32, zmmi)
 TEST_PI32_OP2(vpminsd, min_epi32)
 TEST_PI32_OP2(vpmuldq, mul_epi32)
 TEST_PI32_OP2(vpmulld, mullo_epi32)
+TEST_PI32_OP2(vpermd, permutexvar_epi32)
 
 #define TEST_PI64_OP2_IMPL(INST, INTRIN, REG)                                 \
     TEST_OP2_IMPL(INST, INTRIN, REG, pi64, int64_t, "%ld")
@@ -334,6 +335,21 @@ void avx_test_op2()
     }
     vpmulld_zmmi(a, b, c);
     vpmulld_ymmi(a, b, c);
+
+#pragma clang loop vectorize(disable) unroll(disable)
+    for (int i = 0; i < zmmi_pi32_cnt; ++i)
+    {
+        int64_t index = a.pi32[i];
+        c.pi32[i] = b.pi32[index & 0xF];
+    }
+    vpermd_zmmi(a, b, c);
+#pragma clang loop vectorize(disable) unroll(disable)
+    for (int i = 0; i < zmmi_pi32_cnt; ++i)
+    {
+        int64_t index = a.pi32[i];
+        c.pi32[i] = b.pi32[index & 0x7];
+    }
+    vpermd_ymmi(a, b, c);
 
     a.zmmd = _mm512_set_pd(0, 1, 12, 3, 24, 5, 36, 7);
     b.zmmd = _mm512_set_pd(1, 11, 2, 23, 4, 35, 6, 47);
