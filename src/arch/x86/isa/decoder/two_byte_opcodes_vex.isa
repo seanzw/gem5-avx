@@ -367,6 +367,13 @@
             }
         }
         0x12: decode LEGACY_DECODEVAL {
+            0x0: decode OPCODE_OP_BOTTOM3 {
+                0x2: decode EVEX_L {
+                    0x0: decode REX_W {
+                        0x0: KMOVFROMGPW(Gv, Rv);
+                    }
+                }
+            }
             // 0x66
             0x1: decode OPCODE_OP_BOTTOM3 {
                 0x0: decode EVEX_L {
