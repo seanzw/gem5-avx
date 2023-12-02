@@ -280,6 +280,9 @@
         0x0E: decode LEGACY_DECODEVAL {
             // 0x66.
             0x1: decode OPCODE_OP_BOTTOM3 {
+                0x0: decode EVEX_L_EXTEND {
+                    0x2: VPSHUFD(VZqo, WZqo, Ib);
+                }
                 0x2: decode MODRM_REG {
                     0x2: decode EVEX_L_EXTEND {
                         0x2: VPSRLD(WZqo, Ib);

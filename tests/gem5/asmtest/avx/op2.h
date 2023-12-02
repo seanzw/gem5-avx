@@ -39,6 +39,17 @@
         return 0;                                                             \
     }
 
+#define TEST_OP_REGIMM_IMPL(INST, INTRIN, REG, ELEM, TYPE, FORMAT, IMM)       \
+    CHECK_REG(INST, INTRIN, REG, ELEM, TYPE, FORMAT)                          \
+    __attribute__((noinline)) int INST##_##REG(union vreg a, union vreg c)    \
+    {                                                                         \
+        union vreg r;                                                         \
+        r.REG = INTRIN(a.REG, IMM);                                           \
+                                                                              \
+        INST##_check_##REG(r, c);                                             \
+        return 0;                                                             \
+    }
+
 #define TEST_PS_OP2_IMPL(INST, INTRIN, REG)                                   \
     TEST_OP2_IMPL(INST, INTRIN, REG, ps, float, "%f")
 
@@ -105,6 +116,16 @@ TEST_PI32_OP2(vpminsd, min_epi32)
 TEST_PI32_OP2(vpmuldq, mul_epi32)
 TEST_PI32_OP2(vpmulld, mullo_epi32)
 TEST_PI32_OP2(vpermd, permutexvar_epi32)
+
+#define TEST_PI32_OP_REGIMM_IMPL(INST, INTRIN, REG, IMM)                      \
+    TEST_OP_REGIMM_IMPL(INST, INTRIN, REG, pi32, int32_t, "%d", IMM)
+
+#define TEST_PI32_OP_REGIMM(INST, INTRIN, IMM)                                \
+    TEST_PI32_OP_REGIMM_IMPL(INST, _mm512_##INTRIN, zmmi, IMM)                \
+    TEST_PI32_OP_REGIMM_IMPL(INST, _mm256_##INTRIN, ymmi, IMM)
+ 
+#define SHUFFLE_IMM 0x4b
+TEST_PI32_OP_REGIMM(vpshufd, shuffle_epi32, SHUFFLE_IMM)
 
 #define TEST_PI64_OP2_IMPL(INST, INTRIN, REG)                                 \
     TEST_OP2_IMPL(INST, INTRIN, REG, pi64, int64_t, "%ld")
@@ -350,6 +371,18 @@ void avx_test_op2()
         c.pi32[i] = b.pi32[index & 0x7];
     }
     vpermd_ymmi(a, b, c);
+
+    const int8_t shuffle_index = SHUFFLE_IMM;
+#pragma clang loop vectorize(disable) unroll(disable)
+    for (int i = 0; i < zmmi_pi32_cnt; ++i)
+    {
+        int32_t base = (i >> 2) << 2;
+        int32_t offset = i & 0x3;
+        int32_t index = (shuffle_index >> (offset * 2)) & 0x3;
+        c.pi32[i] = a.pi32[base + index];
+    }
+    vpshufd_zmmi(a, c);
+    vpshufd_ymmi(a, c);
 
     a.zmmd = _mm512_set_pd(0, 1, 12, 3, 24, 5, 36, 7);
     b.zmmd = _mm512_set_pd(1, 11, 2, 23, 4, 35, 6, 47);

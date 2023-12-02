@@ -785,6 +785,12 @@ let {{
             this->doPermuteInLane(xc);
         '''
 
+    class Vshuf(AVXRegImmOp):
+        opClass = 'SimdMiscOp'
+        code = '''
+            this->doPermuteInLane(xc);
+        '''
+
     class AVXRegRegImmOp(AVXOp):
         # Operation on two src reg and one imm8
         abstract = True

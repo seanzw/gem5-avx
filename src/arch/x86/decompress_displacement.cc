@@ -65,6 +65,7 @@ enum EVEXTupleType
  * 66 5F vmaxpd         FULL
  * 66 67 vpackuswb      FULL_MEM
  * 66 6F vmovdqa(load)  FULL_MEM
+ * 66 70 vpshufd        FULL
  * 66 72 vpslld/vpsrld/vpsraq  FULL
  * 66 73 vpsllq/vpsrlq  FULL
  * 66 7F vmovdqa(store) FULL_MEM
@@ -92,7 +93,7 @@ const EVEXTupleType EVEXTupleTypeTwoByte66[256] =
 /*  4 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
 /*  5 */ O , O , O , O , O , O , O , FU, FU, FU, FU, FU, FU, FU, FU, FU,
 /*  6 */ O , O , O , O , O , O , O , FM, O , O , O , O , O , O , O , FM,
-/*  7 */ O , O , FU, FU, O , O , O , O , O , O , O , O , O , O , O , FM,
+/*  7 */ FU, O , FU, FU, O , O , O , O , O , O , O , O , O , O , O , FM,
 /*  8 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
 /*  9 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
 /*  A */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
@@ -206,11 +207,13 @@ const EVEXTupleType EVEXTupleTypeTwoByte[256] =
     };
 /****************************************************************
  * Implemeted.
+ *   66 16 vpermps                FULL
  *   66 18 vbroadcastss           TUPLE1_SCALAR
  *   66 19 vbroadcastsd(W1)       TUPLE1_SCALAR
  * ! 66 19 vbroadcastf32x2(W0)    TUPLE2
  *   66 28 vpmuldq                FULL
  *   66 2B vpackusdw              FULL
+ *   66 36 vpermd                 FULL
  *   66 37 vpcmpgtq               FULL
  *   66 39 vpminsd,vpminsq        FULL
  *   66 40 vpmulld                FULL
