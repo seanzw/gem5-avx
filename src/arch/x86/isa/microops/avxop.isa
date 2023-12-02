@@ -499,9 +499,9 @@ let {{
             }
         '''
 
-    class Vbroadcast256(AVXOp):
+    class VbroadcastWholeReg(AVXOp):
         def __init__(self, dest, src, srcSize, srcVL, destVL):
-            super(Vbroadcast256, self).__init__(
+            super(VbroadcastWholeReg, self).__init__(
                 dest=dest, destVL=destVL,
                 src1=src, srcSize=srcSize, srcVL=srcVL,
             )
@@ -509,14 +509,13 @@ let {{
         constructorCode = '''
             this->addAVXDestRegs();
             _numSrcRegs = srcVL / sizeof(uint64_t);
-            assert(_numSrcRegs == 4);
+            assert(_numSrcRegs == 4 || _numSrcRegs == 2);
             for (int i = 0; i < _numSrcRegs; ++i) {
                 srcRegIdxArr[i] = floatRegClass[src1 + i];
             }
         '''
         code = '''
             FloatInt src[4];
-            assert(_numSrcRegs == 4);
             for (int i = 0; i < _numSrcRegs; ++i) {
                 src[i].ul = xc->getRegOperand(this, i);
             }

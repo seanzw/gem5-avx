@@ -129,12 +129,11 @@ avx_test_vbroadcastf64x4_impl(union vreg a, union vreg c, union vreg expected) {
 
   union vreg result;
 
-  __asm__(
-    "vbroadcastf64x4 %1, %%zmm1\n\t"
-    "vmovapd %%zmm1, %0\n\t"
-    : "=m"(result.zmmd)
-    : "m"(a.ymmd)
-    : "%zmm1");
+  __asm__("vbroadcastf64x4 %1, %%zmm1\n\t"
+          "vmovapd %%zmm1, %0\n\t"
+          : "=m"(result.zmmd)
+          : "m"(a.ymmd)
+          : "%zmm1");
 
   for (int i = 0; i < zmmd_pd_cnt; ++i) {
     if (result.pd[i] != expected.pd[i]) {
@@ -161,6 +160,43 @@ __attribute__((noinline)) int avx_test_vbroadcastf64x4() {
   return 0;
 }
 
+__attribute__((noinline)) int
+avx_test_vbroadcastf32x4_impl(union vreg a, union vreg c, union vreg expected) {
+
+  union vreg result;
+
+  __asm__("vbroadcastf32x4 %1, %%zmm1\n\t"
+          "vmovapd %%zmm1, %0\n\t"
+          : "=m"(result.zmm)
+          : "m"(a.xmm)
+          : "%zmm1");
+
+  for (int i = 0; i < zmm_ps_cnt; ++i) {
+    if (result.ps[i] != expected.ps[i]) {
+      printf(">> AVX Failed vbroadcastf32x4: %d %f expect %f\n", i,
+             result.pd[i], expected.pd[i]);
+      exit(1);
+    }
+  }
+
+  return 0;
+}
+
+__attribute__((noinline)) int avx_test_vbroadcastf32x4() {
+
+  union vreg a, b, c, expected;
+
+  for (int i = 0; i < zmm_ps_cnt; ++i) {
+    a.ps[i] = i;
+    expected.ps[i] = a.ps[i & 0x3];
+  }
+
+  avx_test_vbroadcastf32x4_impl(a, c, expected);
+
+  return 0;
+}
+
+
 void avx_test_inline_asm() {
   avx_test_andnq();
   avx_test_shlxq();
@@ -168,6 +204,7 @@ void avx_test_inline_asm() {
   avx_test_kunpckbw();
   avx_test_fmaddss();
   avx_test_vbroadcastf64x4();
+  avx_test_vbroadcastf32x4();
 }
 
 #endif

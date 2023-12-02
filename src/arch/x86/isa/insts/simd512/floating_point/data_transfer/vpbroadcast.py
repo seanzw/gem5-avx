@@ -137,13 +137,24 @@ def macroop VPBROADCASTW_ZMM_P {
 
 def macroop VBROADCASTF64X4_ZMM_M {
     ldfp256 ufp1, seg, sib, disp, dataSize=32
-    vbroadcast256 srcSize=8, srcVL=32, dest=xmm0, src=ufp1, destVL=64
+    vbroadcastwholereg srcSize=8, srcVL=32, dest=xmm0, src=ufp1, destVL=64
 };
 
 def macroop VBROADCASTF64X4_ZMM_P {
     rdip t7
     ldfp256 ufp1, seg, riprel, disp, dataSize=32
-    vbroadcast256 srcSize=8, srcVL=32, dest=xmm0, src=ufp1, destVL=64
+    vbroadcastwholereg srcSize=8, srcVL=32, dest=xmm0, src=ufp1, destVL=64
+};
+
+def macroop VBROADCASTF32X4_ZMM_M {
+    ldfp128 ufp1, seg, sib, disp, dataSize=16
+    vbroadcastwholereg srcSize=4, srcVL=16, dest=xmm0, src=ufp1, destVL=64
+};
+
+def macroop VBROADCASTF32X4_ZMM_P {
+    rdip t7
+    ldfp128 ufp1, seg, riprel, disp, dataSize=16
+    vbroadcastwholereg srcSize=4, srcVL=16, dest=xmm0, src=ufp1, destVL=64
 };
 
 """

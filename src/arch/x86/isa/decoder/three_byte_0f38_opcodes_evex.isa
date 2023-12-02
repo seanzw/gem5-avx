@@ -49,6 +49,11 @@
                         0x1: VBROADCASTSD(VYdo, Wq);
                     }
                 }
+                0x1A: decode REX_W {
+                    0x0: decode EVEX_L_EXTEND {
+                        0x2: VBROADCASTF32X4(VZqo, Mqo);
+                    }
+                }
                 0x1B: decode REX_W {
                     0x1: decode EVEX_L_EXTEND {
                         0x2: VBROADCASTF64X4(VZqo, Mqo);

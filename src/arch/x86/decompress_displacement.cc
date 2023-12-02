@@ -211,6 +211,8 @@ const EVEXTupleType EVEXTupleTypeTwoByte[256] =
  *   66 18 vbroadcastss           TUPLE1_SCALAR
  *   66 19 vbroadcastsd(W1)       TUPLE1_SCALAR
  * ! 66 19 vbroadcastf32x2(W0)    TUPLE2
+ *   66 1A vbroadcastf64x2(W1)    TUPLE2
+ * ! 66 1A vbroadcastf32x4(W0)    TUPLE4
  *   66 1B vbroadcastf64x4(W1)    TUPLE4
  * ! 66 1B vbroadcastf32x8(W0)    TUPLE8
  *   66 28 vpmuldq                FULL
@@ -236,7 +238,7 @@ const EVEXTupleType EVEXTupleTypeThreeByte660F38[256] =
     {    //LSB
 // MSB   O | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F
 /*  O */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
-/*  1 */ O , O , O , O , O , O , FU, O , TS, TS, O , T4, O , O , O , O ,
+/*  1 */ O , O , O , O , O , O , FU, O , TS, TS, T2, T4, O , O , O , O ,
 /*  2 */ O , O , O , O , O , O , O , O , FU, O , O , FU, O , O , O , O ,
 /*  3 */ O , O , O , O , O , O , FU, FU, O , FU, O , O , O , O , O , O ,
 /*  4 */ FU, O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
@@ -347,7 +349,12 @@ void Decoder::processCompressedDisplacement() {
       switch (emi.legacy.decodeVal) {
         case 0x1: {
           tupleType = EVEXTupleTypeThreeByte660F38[emi.opcode.op];
-          if (emi.opcode.op == 0x1B) {
+          if (emi.opcode.op == 0x1A) {
+          // Special case for 66 0F 38 1A vbroadcastf32x4/vbroadcastf64x2.
+            tupleType = emi.rex.w ?
+              EVEXTupleType::TUPLE2 :
+              EVEXTupleType::TUPLE4;
+          } else if (emi.opcode.op == 0x1B) {
           // Special case for 66 0F 38 1B vbroadcastf32x8/vbroadcastf64x4.
             tupleType = emi.rex.w ?
               EVEXTupleType::TUPLE4 :
