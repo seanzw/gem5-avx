@@ -211,7 +211,7 @@ const EVEXTupleType EVEXTupleTypeTwoByte[256] =
  *   66 18 vbroadcastss           TUPLE1_SCALAR
  *   66 19 vbroadcastsd(W1)       TUPLE1_SCALAR
  * ! 66 19 vbroadcastf32x2(W0)    TUPLE2
- *   66 1B vbroadcastf64x4(W1)    TUPLE4 
+ *   66 1B vbroadcastf64x4(W1)    TUPLE4
  * ! 66 1B vbroadcastf32x8(W0)    TUPLE8
  *   66 28 vpmuldq                FULL
  *   66 2B vpackusdw              FULL
