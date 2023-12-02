@@ -211,6 +211,8 @@ const EVEXTupleType EVEXTupleTypeTwoByte[256] =
  *   66 18 vbroadcastss           TUPLE1_SCALAR
  *   66 19 vbroadcastsd(W1)       TUPLE1_SCALAR
  * ! 66 19 vbroadcastf32x2(W0)    TUPLE2
+ *   66 1B vbroadcastf64x4(W1)    TUPLE4 
+ * ! 66 1B vbroadcastf32x8(W0)    TUPLE8
  *   66 28 vpmuldq                FULL
  *   66 2B vpackusdw              FULL
  *   66 36 vpermd                 FULL
@@ -234,7 +236,7 @@ const EVEXTupleType EVEXTupleTypeThreeByte660F38[256] =
     {    //LSB
 // MSB   O | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F
 /*  O */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
-/*  1 */ O , O , O , O , O , O , FU, O , TS, TS, O , O , O , O , O , O ,
+/*  1 */ O , O , O , O , O , O , FU, O , TS, TS, O , T4, O , O , O , O ,
 /*  2 */ O , O , O , O , O , O , O , O , FU, O , O , FU, O , O , O , O ,
 /*  3 */ O , O , O , O , O , O , FU, FU, O , FU, O , O , O , O , O , O ,
 /*  4 */ FU, O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
@@ -343,8 +345,16 @@ void Decoder::processCompressedDisplacement() {
     }
     case ThreeByte0F38Opcode: {
       switch (emi.legacy.decodeVal) {
-        case 0x1: tupleType = EVEXTupleTypeThreeByte660F38[emi.opcode.op];
+        case 0x1: {
+          tupleType = EVEXTupleTypeThreeByte660F38[emi.opcode.op];
+          if (emi.opcode.op == 0x1B) {
+          // Special case for 66 0F 38 1B vbroadcastf32x8/vbroadcastf64x4.
+            tupleType = emi.rex.w ?
+              EVEXTupleType::TUPLE4 :
+              EVEXTupleType::TUPLE8;
+          }
           break;
+        }
         case 0x4: tupleType = EVEXTupleTypeThreeByteF30F38[emi.opcode.op];
           break;
       }
@@ -398,6 +408,7 @@ void Decoder::processCompressedDisplacement() {
     case TUPLE1_SCALAR: N = emi.rex.w ? 8 : 4; break;
     case TUPLE2:        N = emi.rex.w ? 16 : 8; break;
     case TUPLE4:        N = emi.rex.w ? 32 : 16; break;
+    case TUPLE8:        N = 32; break;
     case MOVDDUP: {
       switch (emi.evex.l_extend) {
         case 0: N = 8; break;

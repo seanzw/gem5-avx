@@ -124,12 +124,50 @@ __attribute__((noinline)) int avx_test_fmaddss() {
   return 0;
 }
 
+__attribute__((noinline)) int
+avx_test_vbroadcastf64x4_impl(union vreg a, union vreg c, union vreg expected) {
+
+  union vreg result;
+
+  __asm__(
+    "vbroadcastf64x4 %1, %%zmm1\n\t"
+    "vmovapd %%zmm1, %0\n\t"
+    : "=m"(result.zmmd)
+    : "m"(a.ymmd)
+    : "%zmm1");
+
+  for (int i = 0; i < zmmd_pd_cnt; ++i) {
+    if (result.pd[i] != expected.pd[i]) {
+      printf(">> AVX Failed vbroadcastf64x4: %d %lf expect %lf\n", i,
+             result.pd[i], expected.pd[i]);
+      exit(1);
+    }
+  }
+
+  return 0;
+}
+
+__attribute__((noinline)) int avx_test_vbroadcastf64x4() {
+
+  union vreg a, b, c, expected;
+
+  for (int i = 0; i < zmmd_pd_cnt; ++i) {
+    a.pd[i] = i;
+    expected.pd[i] = a.pd[i & 0x3];
+  }
+
+  avx_test_vbroadcastf64x4_impl(a, c, expected);
+
+  return 0;
+}
+
 void avx_test_inline_asm() {
   avx_test_andnq();
   avx_test_shlxq();
   avx_test_vpcmpgtq();
   avx_test_kunpckbw();
   avx_test_fmaddss();
+  avx_test_vbroadcastf64x4();
 }
 
 #endif
