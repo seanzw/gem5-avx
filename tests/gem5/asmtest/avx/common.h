@@ -27,6 +27,9 @@ union vreg
     __m256 ymm;
     __m256d ymmd;
     __m256i ymmi;
+    __m128 xmm;
+    __m128d xmmd;
+    __m128i xmmi;
     __mmask8 mask8;
     __mmask16 mask16;
     __mmask32 mask32;

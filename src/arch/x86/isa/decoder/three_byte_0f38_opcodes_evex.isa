@@ -155,6 +155,11 @@
                         }
                     }
                 }
+                0xA9: decode REX_W {
+                    0x0: decode EVEX_L_EXTEND {
+                        0x0: VFMADD213SS(Vo, Wq);
+                    }
+                }
                 0xAC: decode REX_W {
                     0x0: decode EVEX_B {
                         0x0: decode EVEX_L_EXTEND {

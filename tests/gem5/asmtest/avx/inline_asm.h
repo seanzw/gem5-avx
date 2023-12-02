@@ -94,11 +94,42 @@ __attribute__((noinline)) int avx_test_kunpckbw() {
   return 0;
 }
 
+__attribute__((noinline)) int avx_test_fmaddss_impl(union vreg a, union vreg b,
+                                                    union vreg c,
+                                                    union vreg expected) {
+
+  union vreg result;
+  result.xmm = _mm_fmadd_ss(a.xmm, b.xmm, c.xmm);
+
+  if (result.ps[0] != expected.ps[0]) {
+    printf(">> AVX Failed fmaddss: %f expect %f\n", result.ps[0],
+           expected.ps[0]);
+    exit(1);
+  }
+
+  return 0;
+}
+
+__attribute__((noinline)) int avx_test_fmaddss() {
+
+  union vreg a, b, c, expected;
+
+  a.ps[0] = 2.0f;
+  b.ps[0] = 3.0f;
+  c.ps[0] = 1.0f;
+  expected.ps[0] = a.ps[0] * b.ps[0] + c.ps[0];
+
+  avx_test_fmaddss_impl(a, b, c, expected);
+
+  return 0;
+}
+
 void avx_test_inline_asm() {
   avx_test_andnq();
   avx_test_shlxq();
   avx_test_vpcmpgtq();
   avx_test_kunpckbw();
+  avx_test_fmaddss();
 }
 
 #endif
