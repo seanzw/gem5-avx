@@ -196,6 +196,52 @@ __attribute__((noinline)) int avx_test_vbroadcastf32x4() {
   return 0;
 }
 
+__attribute__((noinline)) int avx_test_vmovlps_impl(union vreg a, union vreg c,
+                                                    union vreg expected) {
+
+  union vreg result;
+
+  __asm__("movq %1, %%xmm1\n\t"
+          "vmovlps %%xmm1, %0\n\t"
+          : "=m"(result.pd[0])
+          : "r"(a.pd[0])
+          : "%zmm1");
+
+  if (result.pd[0] != expected.pd[0]) {
+    printf(">> AVX Failed vmovlps: %lf expect %lf\n", result.pd[0],
+           expected.pd[0]);
+    exit(1);
+  }
+
+  // Also test vmovhps.
+  __asm__("movhpd %1, %%xmm1\n\t"
+          "vmovhps %%xmm1, %0\n\t"
+          : "=m"(result.pd[0])
+          : "m"(a.pd[0])
+          : "%zmm1");
+
+  if (result.pd[0] != expected.pd[0]) {
+    printf(">> AVX Failed vmovhps: %lf expect %lf\n", result.pd[0],
+           expected.pd[0]);
+    exit(1);
+  }
+
+  return 0;
+}
+
+__attribute__((noinline)) int avx_test_vmovlps() {
+
+  union vreg a, b, c, expected;
+
+  for (int i = 0; i < zmmd_pd_cnt; ++i) {
+    a.pd[i] = i;
+    expected.pd[i] = a.pd[i];
+  }
+
+  avx_test_vmovlps_impl(a, c, expected);
+
+  return 0;
+}
 
 void avx_test_inline_asm() {
   avx_test_andnq();
@@ -205,6 +251,7 @@ void avx_test_inline_asm() {
   avx_test_fmaddss();
   avx_test_vbroadcastf64x4();
   avx_test_vbroadcastf32x4();
+  avx_test_vmovlps();
 }
 
 #endif

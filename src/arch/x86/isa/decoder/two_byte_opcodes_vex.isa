@@ -11,6 +11,9 @@
                     0x1: VMOVUPS(WYdo, VYdo);
                     0x0: VMOVUPS(Wo, Vo);
                 }
+                0x3: decode EVEX_L {
+                    0x0: VMOVLPS(Mq, Vo);
+                }
                 0x4: decode EVEX_L {
                     0x1: VUNPCKLPS(VYdo, WYdo);
                     0x0: VUNPCKLPS(Vo, Wo);
@@ -24,6 +27,9 @@
                     // vmovlhps with src2 from reg
                     // vmovhps  with src2 from mem
                     0x0: VMOVLHPS(Vo,Wo);
+                }
+                0x7: decode EVEX_L {
+                    0x0: VMOVLPS(Mq, Vo);
                 }
             }
             // 0x66, packed double
