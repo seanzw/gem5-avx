@@ -50,6 +50,18 @@
         return 0;                                                             \
     }
 
+#define TEST_OP_REGREGIMM_IMPL(INST, INTRIN, REG, ELEM, TYPE, FORMAT, IMM)    \
+    CHECK_REG(INST, INTRIN, REG, ELEM, TYPE, FORMAT)                          \
+    __attribute__((noinline)) int INST##_##REG(union vreg a, union vreg b,    \
+                                               union vreg c)                  \
+    {                                                                         \
+        union vreg r;                                                         \
+        r.REG = INTRIN(a.REG, b.REG, IMM);                                    \
+                                                                              \
+        INST##_check_##REG(r, c);                                             \
+        return 0;                                                             \
+    }
+
 #define TEST_PS_OP2_IMPL(INST, INTRIN, REG)                                   \
     TEST_OP2_IMPL(INST, INTRIN, REG, ps, float, "%f")
 
@@ -66,6 +78,24 @@ TEST_PS_OP2(vmaxps, max_ps)
 TEST_PS_OP2(vxorps, xor_ps)
 TEST_PS_OP2(vandps, and_ps)
 TEST_PS_OP2(vunpcklps, unpacklo_ps)
+
+#define TEST_PS_OP_REGIMM_IMPL(INST, INTRIN, REG, IMM)                        \
+    TEST_OP_REGIMM_IMPL(INST, INTRIN, REG, ps, float, "%f", IMM)
+
+#define TEST_PS_OP_REGIMM(INST, INTRIN, IMM)                                  \
+    TEST_PS_OP_REGIMM_IMPL(INST, _mm512_##INTRIN, zmm, IMM)                   \
+    TEST_PS_OP_REGIMM_IMPL(INST, _mm256_##INTRIN, ymm, IMM)
+
+#define TEST_PS_OP_REGREGIMM_IMPL(INST, INTRIN, REG, IMM)                     \
+    TEST_OP_REGREGIMM_IMPL(INST, INTRIN, REG, ps, float, "%f", IMM)
+
+#define TEST_PS_OP_REGREGIMM(INST, INTRIN, IMM)                               \
+    TEST_PS_OP_REGREGIMM_IMPL(INST, _mm512_##INTRIN, zmm, IMM)                \
+    TEST_PS_OP_REGREGIMM_IMPL(INST, _mm256_##INTRIN, ymm, IMM)
+ 
+#define VSHUFF32X4_IMM 238
+TEST_PS_OP_REGREGIMM_IMPL(vshuff32x4, _mm512_shuffle_f32x4, zmm,              \
+                          VSHUFF32X4_IMM)                
 
 #define TEST_PD_OP2_IMPL(INST, INTRIN, REG)                                   \
     TEST_OP2_IMPL(INST, INTRIN, REG, pd, double, "%lf")
@@ -245,6 +275,25 @@ void avx_test_op2()
         }
     }
     vunpcklps_ymm(a, b, c);
+
+    {
+        const uint8_t shuffle_index = VSHUFF32X4_IMM;
+#pragma clang loop vectorize(disable) unroll(disable)
+        for (int i = 0; i < zmmi_pi32_cnt; ++i)
+        {
+            int32_t base = i >> 2;
+            int32_t offset = i & 0x3;
+            int32_t index = (shuffle_index >> (2 * base)) & 0x3;
+            if (i < zmm_ps_cnt / 2) {
+                // Select from a.
+                c.ps[i] = a.ps[index * 4 + offset];
+            } else {
+                // Select from b.
+                c.ps[i] = b.ps[index * 4 + offset];
+            }
+        }
+        vshuff32x4_zmm(a, b, c);
+    }
 
     for (int i = 0; i < zmmi_pi8_cnt; ++i)
     {

@@ -97,6 +97,12 @@
                         }
                     }
                 }
+                0x23: decode EVEX_L_EXTEND {
+                    0x2: decode REX_W {
+                        0x1: VSHUFF64X2(VZqo, WZqo, Ib);
+                        0x0: VSHUFF32X4(VZqo, WZqo, Ib);
+                    }
+                }
                 0x25: decode EVEX_L_EXTEND {
                     0x2: decode REX_W {
                         0x1: VPTERNLOGQ(VZqo, WZqo, Ib);

@@ -83,6 +83,8 @@ categories = [
     "vpshufd",
     "vpextrq",
     "vshufps",
+    "vshuff32x4",
+    "vshuff64x2",
     "vunpckd",
     "vunpcks",
     "vpunpcklqdq",
