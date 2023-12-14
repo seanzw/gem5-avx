@@ -309,6 +309,10 @@
                     0x1: VPUNPCKLBW(VYdo, WYdo);
                     0x0: VPUNPCKLBW(Vo, Wo);
                 }
+                0x1: decode EVEX_L {
+                    0x1: VPUNPCKLWD(VYdo, WYdo);
+                    0x0: VPUNPCKLWD(Vo, Wo);
+                }
                 0x7: decode EVEX_L {
                     0x1: VPACKUSWB(VYdo, WYdo);
                     0x0: VPACKUSWB(Vo, Wo);
@@ -321,6 +325,10 @@
                 0x0: decode EVEX_L {
                     0x1: VPUNPCKHBW(VYdo, WYdo);
                     0x0: VPUNPCKHBW(Vo, Wo);
+                }
+                0x1: decode EVEX_L {
+                    0x1: VPUNPCKHWD(VYdo, WYdo);
+                    0x0: VPUNPCKHWD(Vo, Wo);
                 }
                 0x4: decode EVEX_L {
                     0x0: VPUNPCKLQDQ(Vo, Wo);

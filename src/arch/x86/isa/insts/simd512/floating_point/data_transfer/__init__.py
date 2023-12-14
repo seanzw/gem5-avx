@@ -90,6 +90,7 @@ categories = [
     "vunpcks",
     "vpunpcklqdq",
     "vpunpckbw",
+    "vpunpckwd",
     "vucomiss",
     "vucomisd",
     "vzeroupper",

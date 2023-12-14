@@ -124,6 +124,8 @@ TEST_PI8_OP2(vpaddb, add_epi8)
 TEST_PI8_OP2(vpaddsb, adds_epi8)
 TEST_PI8_OP2(vpunpcklbw, unpacklo_epi8)
 TEST_PI8_OP2(vpunpckhbw, unpackhi_epi8)
+TEST_PI8_OP2(vpunpcklwd, unpacklo_epi16)
+TEST_PI8_OP2(vpunpckhwd, unpackhi_epi16)
 
 #define TEST_PI16_OP2_IMPL(INST, INTRIN, REG)                                 \
     TEST_OP2_IMPL(INST, INTRIN, REG, pi16, int16_t, "%d")
@@ -320,6 +322,34 @@ void avx_test_op2()
     }
     vpunpckhbw_zmmi(a, b, c);
     vpunpckhbw_ymmi(a, b, c);
+
+    for (int i = 0; i < zmmi_pi16_cnt; ++i)
+    {
+        a.pi16[i] = i;
+        b.pi16[i] = i + 20;
+    }
+
+    for (int i = 0; i < zmmi_pi16_cnt; ++i)
+    {
+        int range = 8;
+        int base = (i / range) * range;
+        int offset = (i % range) >> 1;
+        int from_b = i & 0x1;
+        c.pi16[i] = from_b ? b.pi16[base + offset] : a.pi16[base + offset];
+    }
+    vpunpcklwd_zmmi(a, b, c);
+    vpunpcklwd_ymmi(a, b, c);
+
+    for (int i = 0; i < zmmi_pi16_cnt; ++i)
+    {
+        int range = 8;
+        int base = (i / range) * range;
+        int offset = ((i % range) >> 1) + range / 2;
+        int from_b = i & 0x1;
+        c.pi16[i] = from_b ? b.pi16[base + offset] : a.pi16[base + offset];
+    }
+    vpunpckhwd_zmmi(a, b, c);
+    vpunpckhwd_ymmi(a, b, c);
 
     {
         const uint8_t shuffle_index = VSHUFF32X4_IMM;

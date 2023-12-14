@@ -625,6 +625,7 @@ namespace gem5
             {
                 // Interleave at 4B and at every 8B granularity.
                 if (this->srcSize == 1 ||
+                    this->srcSize == 2 ||
                     this->srcSize == 4 ||
                     this->srcSize == 8)
                 {
@@ -664,6 +665,18 @@ namespace gem5
                                 dests[i].uc.i6 = src2.uc.i7;
                                 dests[i].uc.i7 = src1.uc.i8;
                                 dests[i].uc.i8 = src2.uc.i8;
+                            }
+                        } else if (this->srcSize == 2) {
+                            if (offset == 0) {
+                                dests[i].us.i1 = src1.us.i1;
+                                dests[i].us.i2 = src2.us.i1;
+                                dests[i].us.i3 = src1.us.i2;
+                                dests[i].us.i4 = src2.us.i2;
+                            } else {
+                                dests[i].us.i1 = src1.us.i3;
+                                dests[i].us.i2 = src2.us.i3;
+                                dests[i].us.i3 = src1.us.i4;
+                                dests[i].us.i4 = src2.us.i4;
                             }
                         } else if (this->srcSize == 4) {
                             if (offset == 0) {
