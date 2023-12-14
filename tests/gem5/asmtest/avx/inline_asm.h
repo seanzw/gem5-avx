@@ -243,6 +243,27 @@ __attribute__((noinline)) int avx_test_vmovlps() {
   return 0;
 }
 
+__attribute__((noinline)) int avx_test_knot() {
+
+  int64_t result;
+  int64_t a = 0x123456789abcdef;
+  int64_t expected = ~a;
+
+  __asm__("kmovq %1, %%k1\n\t"
+          "knotq %%k1, %%k1\n\t"
+          "kmovq %%k1, %0\n\t"
+          : "=r"(result)
+          : "r"(a)
+          : "%k1");
+
+  if (result != expected) {
+    printf(">> AVX Failed knotq: %#lx expect %#lx\n", result, a);
+    exit(1);
+  }
+
+  return 0;
+}
+
 void avx_test_inline_asm() {
   avx_test_andnq();
   avx_test_shlxq();
@@ -252,6 +273,7 @@ void avx_test_inline_asm() {
   avx_test_vbroadcastf64x4();
   avx_test_vbroadcastf32x4();
   avx_test_vmovlps();
+  avx_test_knot();
 }
 
 #endif

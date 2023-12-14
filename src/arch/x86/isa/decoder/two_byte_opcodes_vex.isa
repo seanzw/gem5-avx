@@ -144,6 +144,17 @@
                 }
             }
         }
+        0x8: decode LEGACY_DECODEVAL {
+            0x0: decode OPCODE_OP_BOTTOM3 {
+                0x4: decode EVEX_L {
+                    0x0: decode REX_W {
+                        0x1: decode MODRM_MOD {
+                            0x3: KNOTQ(Gv, Rv);
+                        }
+                    }
+                }
+            }
+        }
         0x9: decode LEGACY_DECODEVAL {
             // 0x66
             0x1: decode OPCODE_OP_BOTTOM3 {
@@ -397,10 +408,18 @@
             }
             // 0xF2
             0x8: decode OPCODE_OP_BOTTOM3 {
+                0x2: decode EVEX_L {
+                    0x0: decode REX_W {
+                        0x1: KMOVFROMGPQ(Gv, Rv);
+                    }
+                }
                 0x3: decode EVEX_L {
                     0x0: decode REX_W {
                         0x0: decode MODRM_MOD {
                             0x03: KMOVTOGPD(Gv, Rv);
+                        }
+                        0x1: decode MODRM_MOD {
+                            0x03: KMOVTOGPQ(Gv, Rv);
                         }
                     }
                 }

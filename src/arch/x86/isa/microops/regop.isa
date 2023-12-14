@@ -723,6 +723,17 @@ let {{
         '''
         op_class = "No_OpClass"
 
+    # Knot need to do zero extension
+    class Knot(BasicRegOp):
+        code = '''
+            if (dataSize == 1) DestReg = (~SrcReg1) & 0xFF;
+            else if (dataSize == 2) DestReg = (~SrcReg1) & 0xFFFF;
+            else if (dataSize == 4) DestReg = (~SrcReg1) & 0xFFFFFFFF;
+            else if (dataSize == 8) DestReg = (~SrcReg1);
+            else panic("Unsupported knot size %d\\n", dataSize);
+        '''
+        op_class = "IntAluOp"
+
     class Kunpck(BasicRegOp):
         code = '''
             if (dataSize == 1) {

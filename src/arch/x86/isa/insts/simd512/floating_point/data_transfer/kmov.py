@@ -8,8 +8,16 @@ def macroop KMOVTOGPD_R_R {
     kmov reg, maskkm, maskkm, dataSize=4
 };
 
+def macroop KMOVTOGPQ_R_R {
+    kmov reg, maskkm, maskkm, dataSize=8
+};
+
 def macroop KMOVFROMGPW_R_R {
     kmov maskk, regm, regm, dataSize=2
+};
+
+def macroop KMOVFROMGPQ_R_R {
+    kmov maskk, regm, regm, dataSize=8
 };
 
 def macroop KMOVB_R_R {
