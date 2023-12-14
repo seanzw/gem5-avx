@@ -93,6 +93,9 @@
                         0x1: VEXTRACT128H(Wo, VYdo, Ib);
                     }
                 }
+                0x46: decode EVEX_L {
+                    0x1: VPERM2I128(VYdo, WYdo, Ib);
+                }
             }
         }
     }

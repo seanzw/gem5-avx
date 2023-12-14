@@ -90,13 +90,14 @@ TEST_PS_OP2(vunpckhps, unpackhi_ps)
 #define TEST_PS_OP_REGREGIMM_IMPL(INST, INTRIN, REG, IMM)                     \
     TEST_OP_REGREGIMM_IMPL(INST, INTRIN, REG, ps, float, "%f", IMM)
 
-#define TEST_PS_OP_REGREGIMM(INST, INTRIN, IMM)                               \
-    TEST_PS_OP_REGREGIMM_IMPL(INST, _mm512_##INTRIN, zmm, IMM)                \
-    TEST_PS_OP_REGREGIMM_IMPL(INST, _mm256_##INTRIN, ymm, IMM)
+#define TEST_PS_OP_REGREGIMM(INST, INTRIN, IMM_ZMM, IMM_YMM)                  \
+    TEST_PS_OP_REGREGIMM_IMPL(INST, _mm512_##INTRIN, zmm, IMM_ZMM)            \
+    TEST_PS_OP_REGREGIMM_IMPL(INST, _mm256_##INTRIN, ymm, IMM_YMM)
  
-#define VSHUFF32X4_IMM 238
-TEST_PS_OP_REGREGIMM_IMPL(vshuff32x4, _mm512_shuffle_f32x4, zmm,              \
-                          VSHUFF32X4_IMM)                
+#define VSHUFF32X4_ZMM_IMM 238
+#define VSHUFF32X4_YMM_IMM 3
+TEST_PS_OP_REGREGIMM(vshuff32x4, shuffle_f32x4,                               \
+                     VSHUFF32X4_ZMM_IMM, VSHUFF32X4_YMM_IMM)                
 
 #define TEST_PD_OP2_IMPL(INST, INTRIN, REG)                                   \
     TEST_OP2_IMPL(INST, INTRIN, REG, pd, double, "%lf")
@@ -161,6 +162,16 @@ TEST_PI32_OP2(vpermd, permutexvar_epi32)
  
 #define SHUFFLE_IMM 0x4b
 TEST_PI32_OP_REGIMM(vpshufd, shuffle_epi32, SHUFFLE_IMM)
+
+#define TEST_PI32_OP_REGREGIMM_IMPL(INST, INTRIN, REG, IMM)                   \
+    TEST_OP_REGREGIMM_IMPL(INST, INTRIN, REG, pi32, int32_t, "%d", IMM)
+
+#define TEST_PI32_OP_REGREGIMM(INST, INTRIN, IMM_ZMM, IMM_YMM)                \
+    TEST_PI32_OP_REGREGIMM_IMPL(INST, _mm512_##INTRIN, zmmi, IMM_ZMM)         \
+    TEST_PI32_OP_REGREGIMM_IMPL(INST, _mm256_##INTRIN, ymmi, IMM_YMM)
+ 
+TEST_PI32_OP_REGREGIMM(vshufi32x4, shuffle_i32x4,                             \
+                       VSHUFF32X4_ZMM_IMM, VSHUFF32X4_YMM_IMM)                
 
 #define TEST_PI64_OP2_IMPL(INST, INTRIN, REG)                                 \
     TEST_OP2_IMPL(INST, INTRIN, REG, pi64, int64_t, "%ld")
@@ -352,14 +363,14 @@ void avx_test_op2()
     vpunpckhwd_ymmi(a, b, c);
 
     {
-        const uint8_t shuffle_index = VSHUFF32X4_IMM;
+        const uint8_t shuffle_index = VSHUFF32X4_ZMM_IMM;
 #pragma clang loop vectorize(disable) unroll(disable)
         for (int i = 0; i < zmmi_pi32_cnt; ++i)
         {
             int32_t base = i >> 2;
             int32_t offset = i & 0x3;
             int32_t index = (shuffle_index >> (2 * base)) & 0x3;
-            if (i < zmm_ps_cnt / 2) {
+            if (i < zmmi_pi32_cnt / 2) {
                 // Select from a.
                 c.ps[i] = a.ps[index * 4 + offset];
             } else {
@@ -368,6 +379,26 @@ void avx_test_op2()
             }
         }
         vshuff32x4_zmm(a, b, c);
+    }
+
+    {
+        const uint8_t shuffle_index = VSHUFF32X4_YMM_IMM;
+#pragma clang loop vectorize(disable) unroll(disable)
+        for (int i = 0; i < ymmi_pi32_cnt; ++i)
+        {
+            int32_t base = i >> 2;
+            int32_t offset = i & 0x3;
+            int32_t index = (shuffle_index >> (1 * base)) & 0x1;
+            if (i < ymmi_pi32_cnt / 2) {
+                // Select from a.
+                c.ps[i] = a.ps[index * 4 + offset];
+            } else {
+                // Select from b.
+                c.ps[i] = b.ps[index * 4 + offset];
+            }
+        }
+        // vshuff32x4_ymm(a, b, c);
+        vshufi32x4_ymmi(a, b, c);
     }
 
     for (int i = 0; i < zmmi_pi8_cnt; ++i)

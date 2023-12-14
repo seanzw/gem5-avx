@@ -145,6 +145,12 @@
                         0x1: VEXTRACT256H(WYdo, VZqo, Ib);
                     }
                 }
+                0x43: decode REX_W {
+                    0x0: decode EVEX_L_EXTEND {
+                        0x2: VSHUFI32X4(VZqo, WZqo, Ib);
+                        0x1: VSHUFI32X4(VYdo, WYdo, Ib);
+                    }
+                }
             }
         }
     }

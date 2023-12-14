@@ -298,6 +298,7 @@ const EVEXTupleType EVEXTupleTypeThreeByteF30F38[256] =
  *   66 25 vpternlog               FULL
  * ! 66 38 vinserti128             TUPLE2/TUPLE4
  * ! 66 39 vextracti128            TUPLE2/TUPLE4
+ *   66 43 vshuff32x4/f64x2        FULL
  */
 const EVEXTupleType EVEXTupleTypeThreeByte660F3A[256] =
     {    //LSB
@@ -306,7 +307,7 @@ const EVEXTupleType EVEXTupleTypeThreeByte660F3A[256] =
 /*  1 */ O , O , O , O , O , O , TS, TS, T2, T2, O , O , O , O , O , O ,
 /*  2 */ O , O , O , FU, O , FU, O , O , O , O , O , O , O , O , O , O ,
 /*  3 */ O , O , O , O , O , O , O , O , T2, T2, O , O , O , O , O , O ,
-/*  4 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
+/*  4 */ O , O , O , FU, O , O , O , O , O , O , O , O , O , O , O , O ,
 /*  5 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
 /*  6 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
 /*  7 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
