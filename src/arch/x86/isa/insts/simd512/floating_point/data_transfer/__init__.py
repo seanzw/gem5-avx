@@ -89,6 +89,7 @@ categories = [
     "vunpckd",
     "vunpcks",
     "vpunpcklqdq",
+    "vpunpckbw",
     "vucomiss",
     "vucomisd",
     "vzeroupper",

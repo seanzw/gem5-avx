@@ -305,6 +305,10 @@
         0x0C: decode LEGACY_DECODEVAL {
             // operand size (0x66)
             0x1: decode OPCODE_OP_BOTTOM3 {
+                0x0: decode EVEX_L {
+                    0x1: VPUNPCKLBW(VYdo, WYdo);
+                    0x0: VPUNPCKLBW(Vo, Wo);
+                }
                 0x7: decode EVEX_L {
                     0x1: VPACKUSWB(VYdo, WYdo);
                     0x0: VPACKUSWB(Vo, Wo);
@@ -314,6 +318,10 @@
         0x0D: decode LEGACY_DECODEVAL {
             // 0x66
             0x1: decode OPCODE_OP_BOTTOM3 {
+                0x0: decode EVEX_L {
+                    0x1: VPUNPCKHBW(VYdo, WYdo);
+                    0x0: VPUNPCKHBW(Vo, Wo);
+                }
                 0x4: decode EVEX_L {
                     0x0: VPUNPCKLQDQ(Vo, Wo);
                 }

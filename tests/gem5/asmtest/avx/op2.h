@@ -78,6 +78,7 @@ TEST_PS_OP2(vmaxps, max_ps)
 TEST_PS_OP2(vxorps, xor_ps)
 TEST_PS_OP2(vandps, and_ps)
 TEST_PS_OP2(vunpcklps, unpacklo_ps)
+TEST_PS_OP2(vunpckhps, unpackhi_ps)
 
 #define TEST_PS_OP_REGIMM_IMPL(INST, INTRIN, REG, IMM)                        \
     TEST_OP_REGIMM_IMPL(INST, INTRIN, REG, ps, float, "%f", IMM)
@@ -121,6 +122,8 @@ TEST_PD_OP2(vxorpd, xor_pd)
 
 TEST_PI8_OP2(vpaddb, add_epi8)
 TEST_PI8_OP2(vpaddsb, adds_epi8)
+TEST_PI8_OP2(vpunpcklbw, unpacklo_epi8)
+TEST_PI8_OP2(vpunpckhbw, unpackhi_epi8)
 
 #define TEST_PI16_OP2_IMPL(INST, INTRIN, REG)                                 \
     TEST_OP2_IMPL(INST, INTRIN, REG, pi16, int16_t, "%d")
@@ -260,21 +263,63 @@ void avx_test_op2()
     vandps_ymm(a, b, c);
     vpandd_zmmi(a, b, c);
 
+    /******************* Test Unpack Ops. *********************/
+
     for (int i = 0; i < zmm_ps_cnt; ++i)
     {
         a.ps[i] = i;
         b.ps[i] = i + 20;
-        
-        int offset = i % 4;
-        switch (offset)
-        {
-            case 0: c.ps[i] = a.ps[i-0]; break;
-            case 1: c.ps[i] = b.ps[i-1]; break;
-            case 2: c.ps[i] = a.ps[i-1]; break;
-            case 3: c.ps[i] = b.ps[i-2]; break;
-        }
     }
+
+    for (int i = 0; i < zmm_ps_cnt; ++i)
+    {
+        int range = 4;
+        int base = (i / range) * range;
+        int offset = (i % range) >> 1;
+        int from_b = i & 0x1;
+        c.ps[i] = from_b ? b.ps[base + offset] : a.ps[base + offset];
+    }
+    vunpcklps_zmm(a, b, c);
     vunpcklps_ymm(a, b, c);
+
+    for (int i = 0; i < zmm_ps_cnt; ++i)
+    {
+        int range = 4;
+        int base = (i / range) * range;
+        int offset = ((i % range) >> 1) + range / 2;
+        int from_b = i & 0x1;
+        c.ps[i] = from_b ? b.ps[base + offset] : a.ps[base + offset];
+    }
+    vunpckhps_zmm(a, b, c);
+    vunpckhps_ymm(a, b, c);
+
+    for (int i = 0; i < zmmi_pi8_cnt; ++i)
+    {
+        a.pi8[i] = i;
+        b.pi8[i] = i + 20;
+    }
+
+    for (int i = 0; i < zmmi_pi8_cnt; ++i)
+    {
+        int range = 16;
+        int base = (i / range) * range;
+        int offset = (i % range) >> 1;
+        int from_b = i & 0x1;
+        c.pi8[i] = from_b ? b.pi8[base + offset] : a.pi8[base + offset];
+    }
+    vpunpcklbw_zmmi(a, b, c);
+    vpunpcklbw_ymmi(a, b, c);
+
+    for (int i = 0; i < zmmi_pi8_cnt; ++i)
+    {
+        int range = 16;
+        int base = (i / range) * range;
+        int offset = ((i % range) >> 1) + range / 2;
+        int from_b = i & 0x1;
+        c.pi8[i] = from_b ? b.pi8[base + offset] : a.pi8[base + offset];
+    }
+    vpunpckhbw_zmmi(a, b, c);
+    vpunpckhbw_ymmi(a, b, c);
 
     {
         const uint8_t shuffle_index = VSHUFF32X4_IMM;

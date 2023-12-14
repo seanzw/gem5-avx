@@ -614,6 +614,7 @@ namespace gem5
         void AVXOpBase::doUnpackOp(ExecContext *xc, BinaryOp op) const
         {
             auto vRegs = destVL / sizeof(uint64_t);
+            FloatInt dests[vRegs];
             switch (op)
             {
             default:
@@ -622,10 +623,11 @@ namespace gem5
             case BinaryOp::UnpackInterleaveLow:
             case BinaryOp::UnpackInterleaveHigh:
             {
-                // Interleave at 4B.
-                if (this->srcSize == 4 || this->srcSize == 8)
+                // Interleave at 4B and at every 8B granularity.
+                if (this->srcSize == 1 ||
+                    this->srcSize == 4 ||
+                    this->srcSize == 8)
                 {
-                    FloatInt dests[vRegs];
                     for (int i = 0; i < vRegs; ++i)
                     {
                         FloatInt src1;
@@ -643,42 +645,50 @@ namespace gem5
                         src2.ul =
                             xc->getRegOperand(this, srcIdx * 2 + 1);
 
-                        switch (this->srcSize)
-                        {
-                            case 4: 
-                                if (offset == 0)
-                                {
-                                    dests[i].ui.i1 = src1.ui.i1;
-                                    dests[i].ui.i2 = src2.ui.i1;
-                                }
-                                else
-                                {
-                                    dests[i].ui.i1 = src1.ui.i2;
-                                    dests[i].ui.i2 = src2.ui.i2;
-                                }
-                                break;
-                            case 8: 
-                                if (offset == 0)
-                                {
-                                    dests[i].ul = src1.ul;
-                                }
-                                else
-                                {
-                                    dests[i].ul = src2.ul;
-                                }
-                                break;
-                            default:
-                                panic("unimplemented unpck");
-                                break;
+                        if (this->srcSize == 1) {
+                            if (offset == 0) {
+                                dests[i].uc.i1 = src1.uc.i1;
+                                dests[i].uc.i2 = src2.uc.i1;
+                                dests[i].uc.i3 = src1.uc.i2;
+                                dests[i].uc.i4 = src2.uc.i2;
+                                dests[i].uc.i5 = src1.uc.i3;
+                                dests[i].uc.i6 = src2.uc.i3;
+                                dests[i].uc.i7 = src1.uc.i4;
+                                dests[i].uc.i8 = src2.uc.i4;
+                            } else {
+                                dests[i].uc.i1 = src1.uc.i5;
+                                dests[i].uc.i2 = src2.uc.i5;
+                                dests[i].uc.i3 = src1.uc.i6;
+                                dests[i].uc.i4 = src2.uc.i6;
+                                dests[i].uc.i5 = src1.uc.i7;
+                                dests[i].uc.i6 = src2.uc.i7;
+                                dests[i].uc.i7 = src1.uc.i8;
+                                dests[i].uc.i8 = src2.uc.i8;
+                            }
+                        } else if (this->srcSize == 4) {
+                            if (offset == 0) {
+                                dests[i].ui.i1 = src1.ui.i1;
+                                dests[i].ui.i2 = src2.ui.i1;
+                            } else {
+                                dests[i].ui.i1 = src1.ui.i2;
+                                dests[i].ui.i2 = src2.ui.i2;
+                            }
+                        } else if (this->srcSize == 8) {
+                            if (offset == 0) {
+                                dests[i].ul = src1.ul;
+                            } else {
+                                dests[i].ul = src2.ul;
+                            }
                         }
                     }
-                    for (int i = 0; i < vRegs; ++i)
-                    {
-                        xc->setRegOperand(this, i, dests[i].ul);
-                    }
-                    return;
+                } else {
+                    panic("unimplemented unpack size %d.", this->srcSize);
                 }
-                break;
+                for (int i = 0; i < vRegs; ++i)
+                {
+                    xc->setRegOperand(this, i, dests[i].ul);
+                }
+                return;
             }
             }
             panic("Unsupported unpack op %d size %d VL %d.",

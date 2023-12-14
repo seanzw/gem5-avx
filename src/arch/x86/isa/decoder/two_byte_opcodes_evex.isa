@@ -14,6 +14,20 @@
                     0x1: VMOVUPS(WYdo, VYdo);
                     0x0: VMOVUPS(Wo, Vo);
                 }
+                0x4: decode REX_W {
+                    0x0: decode EVEX_L_EXTEND {
+                        0x2: VUNPCKLPS(VZqo, WZqo);
+                        0x1: VUNPCKLPS(VYdo, WYdo);
+                        0x0: VUNPCKLPS(Vo, Wo);
+                    }
+                }
+                0x5: decode REX_W {
+                    0x0: decode EVEX_L_EXTEND {
+                        0x2: VUNPCKHPS(VZqo, WZqo);
+                        0x1: VUNPCKHPS(VYdo, WYdo);
+                        0x0: VUNPCKHPS(Vo, Wo);
+                    }
+                }
             }
             // 66, packed double.
             0x1: decode OPCODE_OP_BOTTOM3 {
@@ -243,6 +257,11 @@
         0x0C: decode LEGACY_DECODEVAL {
             // operand size (0x66)
             0x1: decode OPCODE_OP_BOTTOM3 {
+                0x0: decode EVEX_L_EXTEND {
+                    0x2: VPUNPCKLBW(VZqo, WZqo);
+                    0x1: VPUNPCKLBW(VYdo, WYdo);
+                    0x0: VPUNPCKLBW(Vo, Wo);
+                }
                 0x7: decode EVEX_L_EXTEND {
                     0x2: VPACKUSWB(VZqo, WZqo);
                     0x1: VPACKUSWB(VYdo, WYdo);
@@ -273,6 +292,11 @@
             }
             // operand size (0x66)
             0x1: decode OPCODE_OP_BOTTOM3 {
+                0x0: decode EVEX_L_EXTEND {
+                    0x2: VPUNPCKHBW(VZqo, WZqo);
+                    0x1: VPUNPCKHBW(VYdo, WYdo);
+                    0x0: VPUNPCKHBW(Vo, Wo);
+                }
                 0x7: decode REX_W {
                     0x1: decode EVEX_L_EXTEND {
                         0x2: VMOVDQA32(VZqo, WZqo);
