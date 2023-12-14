@@ -148,6 +148,8 @@ const EVEXTupleType EVEXTupleTypeTwoByteF3[256] =
  * F2 5C vsubsd         TUPLE1_SCALAR
  * F2 5A vcvtsd2ss      TUPLE1_SCALAR
  * F2 5E vdivsd         TUPLE1_SCALAR
+ * F2 6F vmovdqu(load)  FULL_MEM
+ * F2 7F vmovdqu(store) FULL_MEM
  */
 const EVEXTupleType EVEXTupleTypeTwoByteF2[256] =
     {    //LSB
@@ -158,8 +160,8 @@ const EVEXTupleType EVEXTupleTypeTwoByteF2[256] =
 /*  3 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
 /*  4 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
 /*  5 */ O , O , O , O , O , O , O , O , TS, TS, TS, O , TS, O , TS, O ,
-/*  6 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
-/*  7 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
+/*  6 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , FM,
+/*  7 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , FM,
 /*  8 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
 /*  9 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
 /*  A */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
