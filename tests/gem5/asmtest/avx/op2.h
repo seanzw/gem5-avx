@@ -3,32 +3,8 @@
 
 #include "common.h"
 
-#define CHECK_REG(INST, INTRIN, REG, ELEM, TYPE, FORMAT)                      \
-    __attribute__((noinline)) int INST##_check_##REG(union vreg r,            \
-                                                     union vreg c)            \
-    {                                                                         \
-        int failed = 0;                                                       \
-        _Pragma("clang loop unroll(disable) vectorize(disable)")              \
-        for (int i = 0; i < REG##_##ELEM##_cnt; ++i)                          \
-        {                                                                     \
-            TYPE expected = c.ELEM[i];                                        \
-            TYPE actual = r.ELEM[i];                                          \
-            PRINTF("Get %d " #FORMAT " " #FORMAT ".\n", i, expected, actual); \
-            if (expected != actual)                                           \
-            {                                                                 \
-                failed = 1;                                                   \
-            }                                                                 \
-        }                                                                     \
-        if (failed)                                                           \
-        {                                                                     \
-            printf(">> AVX Failed " #INST "_" #REG "\n");                     \
-            exit(1);                                                          \
-        }                                                                     \
-        return 0;                                                             \
-    }
-
 #define TEST_OP2_IMPL(INST, INTRIN, REG, ELEM, TYPE, FORMAT)                  \
-    CHECK_REG(INST, INTRIN, REG, ELEM, TYPE, FORMAT)                          \
+    CHECK_REG(INST, REG, ELEM, TYPE, FORMAT)                                  \
     __attribute__((noinline)) int INST##_##REG(union vreg a, union vreg b,    \
                                                union vreg c)                  \
     {                                                                         \
@@ -40,7 +16,7 @@
     }
 
 #define TEST_OP_REGIMM_IMPL(INST, INTRIN, REG, ELEM, TYPE, FORMAT, IMM)       \
-    CHECK_REG(INST, INTRIN, REG, ELEM, TYPE, FORMAT)                          \
+    CHECK_REG(INST, REG, ELEM, TYPE, FORMAT)                                  \
     __attribute__((noinline)) int INST##_##REG(union vreg a, union vreg c)    \
     {                                                                         \
         union vreg r;                                                         \
@@ -51,7 +27,7 @@
     }
 
 #define TEST_OP_REGREGIMM_IMPL(INST, INTRIN, REG, ELEM, TYPE, FORMAT, IMM)    \
-    CHECK_REG(INST, INTRIN, REG, ELEM, TYPE, FORMAT)                          \
+    CHECK_REG(INST, REG, ELEM, TYPE, FORMAT)                                  \
     __attribute__((noinline)) int INST##_##REG(union vreg a, union vreg b,    \
                                                union vreg c)                  \
     {                                                                         \

@@ -40,6 +40,10 @@ union vreg
     int16_t pi16[zmmi_pi16_cnt];
     int32_t pi32[zmmi_pi32_cnt];
     int64_t pi64[zmmi_pi64_cnt];
+    uint8_t pu8[zmmi_pi8_cnt];
+    uint16_t pu16[zmmi_pi16_cnt];
+    uint32_t pu32[zmmi_pi32_cnt];
+    uint64_t pu64[zmmi_pi64_cnt];
 };
 
 #ifdef VERBOSE
@@ -47,5 +51,29 @@ union vreg
 #else
 #define PRINTF(...)
 #endif
+
+#define CHECK_REG(INST, REG, ELEM, TYPE, FORMAT)                              \
+    __attribute__((noinline)) int INST##_check_##REG(union vreg r,            \
+                                                     union vreg c)            \
+    {                                                                         \
+        int failed = 0;                                                       \
+        _Pragma("clang loop unroll(disable) vectorize(disable)")              \
+        for (int i = 0; i < REG##_##ELEM##_cnt; ++i)                          \
+        {                                                                     \
+            TYPE expected = c.ELEM[i];                                        \
+            TYPE actual = r.ELEM[i];                                          \
+            PRINTF("Get %d " #FORMAT " " #FORMAT ".\n", i, expected, actual); \
+            if (expected != actual)                                           \
+            {                                                                 \
+                failed = 1;                                                   \
+            }                                                                 \
+        }                                                                     \
+        if (failed)                                                           \
+        {                                                                     \
+            printf(">> AVX Failed " #INST "_" #REG "\n");                     \
+            exit(1);                                                          \
+        }                                                                     \
+        return 0;                                                             \
+    }
 
 #endif

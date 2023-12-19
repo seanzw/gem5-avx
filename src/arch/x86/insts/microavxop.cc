@@ -191,9 +191,6 @@ namespace gem5
                 case BinaryOp::IntOr:
                     dest.si.i1 = src1.si.i1 | src2.si.i1;
                     dest.si.i2 = src1.si.i2 | src2.si.i2;
-                    panic("Invalid BinaryOp %d SrcSize %d DestSize %d %s.",
-                        op, this->srcSize, this->destSize,
-                        this->generateDisassembly(0, nullptr));
                     break;
                 case BinaryOp::IntCmpEq:
                     dest.si.i1 = (src1.si.i1 == src2.si.i1) ? 0xFFFFFFFF : 0x0;
@@ -319,7 +316,9 @@ namespace gem5
                 switch (op)
                 {
                 default:
-                    assert(false && "Invalid op type.");
+                    panic("Invalid BinaryOp %d SrcSize %d DestSize %d %s.",
+                        op, this->srcSize, this->destSize,
+                        this->generateDisassembly(0, nullptr));
                 case BinaryOp::FloatAdd:
                     dest.d = src1.d + src2.d;
                     break;

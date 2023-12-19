@@ -734,6 +734,17 @@ let {{
         '''
         op_class = "IntAluOp"
 
+    # Kshiftr
+    class Kshiftr(BasicRegOp):
+        code = '''
+            if (dataSize == 1) DestReg = (SrcReg1 >> op2) & 0xFF;
+            else if (dataSize == 2) DestReg = (SrcReg1 >> op2) & 0xFFFF;
+            else if (dataSize == 4) DestReg = (SrcReg1 >> op2) & 0xFFFFFFFF;
+            else if (dataSize == 8) DestReg = (SrcReg1 >> op2);
+            else panic("Unsupported kshiftr size %d\\n", dataSize);
+        '''
+        op_class = "IntAluOp"
+
     class Kunpck(BasicRegOp):
         code = '''
             if (dataSize == 1) {

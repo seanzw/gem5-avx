@@ -257,12 +257,34 @@ __attribute__((noinline)) int avx_test_knot() {
           : "%k1");
 
   if (result != expected) {
-    printf(">> AVX Failed knotq: %#lx expect %#lx\n", result, a);
+    printf(">> AVX Failed knotq: %#lx expect %#lx\n", result, expected);
     exit(1);
   }
 
   return 0;
 }
+
+__attribute__((noinline)) int avx_test_kshiftr() {
+
+  int64_t result;
+  int64_t a = 0x123456789abcdef;
+  int64_t expected = (uint64_t)a >> 17;
+
+  __asm__("kmovq %1, %%k1\n\t"
+          "kshiftrq $17, %%k1, %%k1\n\t"
+          "kmovq %%k1, %0\n\t"
+          : "=r"(result)
+          : "r"(a)
+          : "%k1");
+
+  if (result != expected) {
+    printf(">> AVX Failed kshiftrq: %#lx expect %#lx\n", result, expected);
+    exit(1);
+  }
+
+  return 0;
+}
+
 
 void avx_test_inline_asm() {
   avx_test_andnq();
@@ -274,6 +296,7 @@ void avx_test_inline_asm() {
   avx_test_vbroadcastf32x4();
   avx_test_vmovlps();
   avx_test_knot();
+  avx_test_kshiftr();
 }
 
 #endif

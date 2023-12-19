@@ -38,6 +38,7 @@
 categories = [
     "kmov",
     "knot",
+    "kshiftr",
     "kunpck",
     "valign",
     "vcomiss",

@@ -1,9 +1,10 @@
 
+CFLAGS=-mavx512f -mavx512dq -mavx512vl -mavx512bw -mavx512vnni
 
 avxtests: avxtests.c *.h
-	clang -O3 -mavx512f -mavx512dq -mavx512vl -mavx512bw $< -lm -o $@.exe
-	clang -O3 -S -mavx512f -mavx512dq -mavx512vl -mavx512bw $< -o $@.s
-	clang -O3 -DVERBOSE -mavx512f -mavx512dq -mavx512vl -mavx512bw $< -lm -o $@.verbose.exe
+	clang -O3 ${CFLAGS} $< -lm -o $@.exe
+	clang -O3 -S ${CFLAGS} $< -o $@.s
+	clang -O3 -DVERBOSE ${CFLAGS} $< -lm -o $@.verbose.exe
 	objdump -d $@.exe > $@.asm
 
 clean:

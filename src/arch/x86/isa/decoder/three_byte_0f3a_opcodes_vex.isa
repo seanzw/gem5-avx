@@ -84,6 +84,11 @@
                 0x21: decode EVEX_L {
                     0x0: VINSERTPS(Vo, Wo, Ib);
                 }
+                0x31: decode EVEX_L {
+                    0x0: decode REX_W {
+                        0x1: KSHIFTRQ(Gq, Rq, Ib);
+                    }
+                }
                 0x38: decode EVEX_L {
                     0x1: VINSERT128(VYdo, Wo, Ib);
                 }
