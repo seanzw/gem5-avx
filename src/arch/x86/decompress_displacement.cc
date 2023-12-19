@@ -229,6 +229,7 @@ const EVEXTupleType EVEXTupleTypeTwoByte[256] =
  *   66 37 vpcmpgtq               FULL
  *   66 39 vpminsd,vpminsq        FULL
  *   66 40 vpmulld                FULL
+ *   66 50 vpdpbusd               FULL
  *   66 58 vbroadcastd            TUPLE1_SCALAR
  *   66 7A vbroadcastb            TUPLE1_SCALAR
  *   66 7B vbroadcastw            TUPLE1_SCALAR
@@ -250,7 +251,7 @@ const EVEXTupleType EVEXTupleTypeThreeByte660F38[256] =
 /*  2 */ O , O , O , O , O , O , O , O , FU, O , O , FU, O , O , O , O ,
 /*  3 */ O , O , O , O , O , O , FU, FU, O , FU, O , O , O , O , O , O ,
 /*  4 */ FU, O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
-/*  5 */ O , O , O , O , O , O , O , O , TS, O , O , O , O , O , O , O ,
+/*  5 */ FU, O , O , O , O , O , O , O , TS, O , O , O , O , O , O , O ,
 /*  6 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,
 /*  7 */ O , O , O , O , O , O , O , O , O , O , TS, TS, O , O , O , O ,
 /*  8 */ O , O , O , O , O , O , O , O , O , O , O , O , O , O , O , O ,

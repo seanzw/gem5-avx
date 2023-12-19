@@ -12,6 +12,7 @@ categories = [
     "vpcmpeqd",
     "vpcmpeqb",
     "vpcmpgtq",
+    "vpdpbusd",
     "vpmovmskb",
     "vpsubd",
     "vpsubq",

@@ -399,14 +399,17 @@ let {{
             this->doPermOp(xc);
         '''
 
-    class Vfused(AVXOp):
+    class Vtrinary(AVXOp):
         # Used in packed arithmetic ops with three operands, e.g. vfmaddps
         # dest = (src1 op1 src2) op2 src3
         abstract = True
-        def __init__(self, dest, src1, src2, src3, size, VL):
-            super(Vfused, self).__init__(
+        def __init__(self, dest, src1, src2, src3, srcSize, destSize,VL,
+                     zeroHighRegs=0,
+                    ):
+            super(Vtrinary, self).__init__(
                 dest=dest, src1=src1, src2=src2, src3=src3,
-                destSize=size, destVL=VL, srcSize=size, srcVL=VL
+                destSize=destSize, destVL=VL, srcSize=srcSize, srcVL=VL,
+                zeroHighRegs=zeroHighRegs,
             )
         srcType = 'AVXOpBase::SrcType::RegRegReg'
         constructorCode = '''
@@ -420,6 +423,18 @@ let {{
                 srcRegIdxArr[i * 3 + 2] = floatRegClass[src3 + i] ;
             }
         '''
+
+    class Vfused(Vtrinary):
+        # Inherit from vtrinary with same srcSize and destSize.
+        abstract = True
+        def __init__(self, dest, src1, src2, src3, size, VL,
+                     zeroHighRegs=0,
+                    ):
+            super(Vfused, self).__init__(
+                dest=dest, src1=src1, src2=src2, src3=src3,
+                srcSize=size, destSize=size, VL=VL,
+                zeroHighRegs=zeroHighRegs,
+            )
 
     class Sfused(AVXOp):
         # Used in single arithmetic ops with three operands, e.g. sfmaddps
@@ -442,6 +457,13 @@ let {{
             srcRegIdxArr[2] = floatRegClass[src3] ;
             // The last one is the dest register.
             srcRegIdxArr[3] = floatRegClass[dest] ;
+        '''
+
+    class Vdotprod(Vtrinary):
+        opClass = 'SimdFloatMultAccOp'
+        code = '''
+            this->doPackedTrinaryOp(xc,
+                TrinaryOp::UIntSIntMulAdd);
         '''
 
     class Vfmaddf(Vfused):

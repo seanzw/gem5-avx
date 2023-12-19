@@ -102,6 +102,13 @@
                         0x0: VPMULLD(Vo, Wo);
                     }
                 }
+                0x50: decode REX_W {
+                    0x0: decode EVEX_L_EXTEND {
+                        0x2: VPDPBUSD(VZqo, WZqo);
+                        0x1: VPDPBUSD(VYdo, WYdo);
+                        0x0: VPDPBUSD(Vo, Wo);
+                    }
+                }
                 0x58: decode REX_W {
                     0x0: decode EVEX_L_EXTEND {
                         0x2: VPBROADCASTD(VZqo, Wd);
